@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"farcoding.me/farsounds/soundwriter"
+	"github.com/almerlucke/go-farsounds/soundwriter"
 )
 
 func main() {
