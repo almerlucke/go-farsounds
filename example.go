@@ -14,10 +14,16 @@ func main() {
 	samplerate := 44100.0 * 4
 	buflen := int32(1024)
 
-	oscModule1 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
-	oscModule2 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 4.0/samplerate, 100.0/samplerate, buflen)
+	patchModule := farsounds.NewPatchModule(1, 1, buflen)
+	patch := patchModule.Processor.(*farsounds.Patch)
 
-	oscModule2.Connect(0, oscModule1, 0)
+	oscModule1 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
+	patch.Modules.PushBack(oscModule1)
+	patch.InletModules[0].Connect(0, oscModule1, 0)
+	oscModule1.Connect(0, patch.OutletModules[0], 0)
+
+	oscModule2 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 4.0/samplerate, 100.0/samplerate, buflen)
+	oscModule2.Connect(0, patchModule, 0)
 
 	// osc1 := farsounds.NewOsc(farsounds.SineTable, 0, 100.0/samplerate, 1)
 	// osc2 := farsounds.NewOsc(farsounds.SineTable, 0, 201.0/samplerate, 0.6)
@@ -35,10 +41,10 @@ func main() {
 	timestamp := int64(0)
 
 	for i := 0; i < 200; i++ {
-		oscModule1.Processed = false
+		patchModule.Processed = false
 		oscModule2.Processed = false
-		oscModule1.DSP(buflen, timestamp, int32(samplerate))
-		err = writer.WriteSamples(oscModule1.Outlets[0].Buffer)
+		patchModule.DSP(buflen, timestamp, int32(samplerate))
+		err = writer.WriteSamples(patchModule.Outlets[0].Buffer)
 		if err != nil {
 			writer.Close()
 			fmt.Printf("write err: %v\n", err)
@@ -47,11 +53,11 @@ func main() {
 		timestamp += int64(buflen)
 
 		if i == 100 {
-			oscModule2.Disconnect(0, oscModule1, 0)
+			oscModule2.Disconnect(0, patchModule, 0)
 		}
 	}
 
 	writer.Close()
-	oscModule1.Cleanup()
+	patchModule.Cleanup()
 	oscModule2.Cleanup()
 }

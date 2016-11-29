@@ -7,12 +7,6 @@ type Osc struct {
 	Amplitude float64
 }
 
-// OscModule wraps an osc in a module
-type OscModule struct {
-	*Module
-	*Osc
-}
-
 // NewOsc creates a new table lookup oscillator
 func NewOsc(table []float64, phase float64, inc float64, amp float64) *Osc {
 	osc := new(Osc)
