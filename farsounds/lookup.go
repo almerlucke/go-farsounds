@@ -4,11 +4,11 @@ import "math"
 
 // Lookup holds table data
 type Lookup struct {
-	table []float64
+	table WaveTable
 }
 
 // NewLookup creates a new lookup
-func NewLookup(table []float64) *Lookup {
+func NewLookup(table WaveTable) *Lookup {
 	lookup := new(Lookup)
 	lookup.table = table
 	return lookup

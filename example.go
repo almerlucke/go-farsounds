@@ -13,11 +13,13 @@ func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	samplerate := 44100.0 * 4
+	buflen := int32(2048)
+	oscModule := farsounds.NewOscModule(farsounds.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
 
-	osc1 := farsounds.NewOsc(farsounds.SineTable, 0, 100.0/samplerate, 1)
-	osc2 := farsounds.NewOsc(farsounds.SineTable, 0, 201.0/samplerate, 0.6)
-	osc3 := farsounds.NewOsc(farsounds.SineTable, 0, 430.0/samplerate, 0.4)
-	osc4 := farsounds.NewOsc(farsounds.SineTable, 0, 510.0/samplerate, 0.2)
+	// osc1 := farsounds.NewOsc(farsounds.SineTable, 0, 100.0/samplerate, 1)
+	// osc2 := farsounds.NewOsc(farsounds.SineTable, 0, 201.0/samplerate, 0.6)
+	// osc3 := farsounds.NewOsc(farsounds.SineTable, 0, 430.0/samplerate, 0.4)
+	// osc4 := farsounds.NewOsc(farsounds.SineTable, 0, 510.0/samplerate, 0.2)
 
 	outputPath := "/users/almerlucke/Desktop/output"
 
@@ -27,19 +29,18 @@ func main() {
 		return
 	}
 
-	numSamples := int64(int64(samplerate) * 2 * int64(writer.Channels))
-	samples := make([]float64, numSamples)
+	timestamp := int64(0)
 
-	for index := range samples {
-		newSample := osc1.Next(0) + osc2.Next(0) + osc3.Next(0) + osc4.Next(0)
-		samples[index] = newSample
-	}
-
-	err = writer.WriteSamples(samples[:])
-	if err != nil {
-		writer.Close()
-		fmt.Printf("write err: %v\n", err)
-		return
+	for i := 0; i < 100; i++ {
+		oscModule.Processed = false
+		oscModule.DSP(buflen, timestamp, int32(samplerate))
+		err = writer.WriteSamples(oscModule.Outlets[0].Buffer)
+		if err != nil {
+			writer.Close()
+			fmt.Printf("write err: %v\n", err)
+			return
+		}
+		timestamp += int64(buflen)
 	}
 
 	writer.Close()
