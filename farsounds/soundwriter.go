@@ -1,6 +1,4 @@
-// Package soundwriter provides a SoundWriter object and methods to write double float samples to disc
-// upon closing the sound writer it will perform normalization automatically
-package soundwriter
+package farsounds
 
 import (
 	"math"
