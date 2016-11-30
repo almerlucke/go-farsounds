@@ -22,22 +22,39 @@ type Connection struct {
 
 // Module interface
 type Module interface {
+	// Prepare for DSP
 	PrepareDSP()
+	// DSP generate samples
 	DSP(buflen int32, timestamp int64, samplerate int32)
+	// Perform Cleanup to release any resources
 	Cleanup()
+	// Get slice of inlets
 	GetInlets() []*Inlet
+	// Get slice of outlets
 	GetOutlets() []*Outlet
+	// Connect to another module
 	Connect(out int, otherModule Module, in int)
+	// Disconnect from another module
 	Disconnect(out int, otherModule Module, in int)
+	// Check if connected to another module
 	IsConnected(out int, otherModule Module, in int) bool
+	// Get unique identifier for this module
+	GetIdentifier() string
+	// Set unique identifier for this module
+	SetIdentifier(string)
+	// Send a message to a module at address
+	SendMessage(address string, message interface{})
+	// Message for this module
+	Message(message interface{})
 }
 
 // BaseModule is the base module that implements all module interface methods
 type BaseModule struct {
-	Parent    Module
-	Inlets    []*Inlet
-	Outlets   []*Outlet
-	Processed bool
+	Parent     Module
+	Inlets     []*Inlet
+	Outlets    []*Outlet
+	Processed  bool
+	Identifier string
 }
 
 // NewBaseModule creates a new basic module
@@ -217,3 +234,19 @@ func (baseModule *BaseModule) Disconnect(out int, otherModule Module, in int) {
 		}
 	}
 }
+
+// GetIdentifier for this module
+func (baseModule *BaseModule) GetIdentifier() string {
+	return baseModule.Identifier
+}
+
+// SetIdentifier for this module
+func (baseModule *BaseModule) SetIdentifier(identifier string) {
+	baseModule.Identifier = identifier
+}
+
+// SendMessage STUB
+func (baseModule *BaseModule) SendMessage(address string, message interface{}) {}
+
+// Message STUB
+func (baseModule *BaseModule) Message(message interface{}) {}
