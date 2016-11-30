@@ -17,11 +17,11 @@ func main() {
 	patch := farsounds.NewPatch(1, 1, buflen)
 	oscModule1 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
 	patch.Modules.PushBack(oscModule1)
-	farsounds.Connect(patch.InletModules[0], 0, oscModule1, 0)
-	farsounds.Connect(oscModule1, 0, patch.OutletModules[0], 0)
+	patch.InletModules[0].Connect(0, oscModule1, 0)
+	oscModule1.Connect(0, patch.OutletModules[0], 0)
 
 	oscModule2 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 4.0/samplerate, 100.0/samplerate, buflen)
-	farsounds.Connect(oscModule2, 0, patch, 0)
+	oscModule2.Connect(0, patch, 0)
 
 	outputPath := "/users/almerlucke/Desktop/output"
 
@@ -46,7 +46,7 @@ func main() {
 		timestamp += int64(buflen)
 
 		if i == 100 {
-			farsounds.Disconnect(oscModule2, 0, patch, 0)
+			oscModule2.Disconnect(0, patch, 0)
 		}
 	}
 

@@ -33,10 +33,11 @@ type OscModule struct {
 
 // NewOscModule creates a new osc module
 func NewOscModule(table WaveTable, phase float64, inc float64, amp float64, buflen int32) *OscModule {
-	return &OscModule{
-		BaseModule: NewBaseModule(3, 1, buflen),
-		Osc:        NewOsc(table, phase, inc, amp),
-	}
+	oscModule := new(OscModule)
+	oscModule.BaseModule = NewBaseModule(3, 1, buflen)
+	oscModule.Parent = oscModule
+	oscModule.Osc = NewOsc(table, phase, inc, amp)
+	return oscModule
 }
 
 // DSP fills output buffer for this osc module with samples

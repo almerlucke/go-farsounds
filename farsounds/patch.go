@@ -22,6 +22,9 @@ func NewPatch(numInlets int, numOutlets int, buflen int32) *Patch {
 	// Set base module
 	patch.BaseModule = NewBaseModule(numInlets, numOutlets, buflen)
 
+	// Set parent ptr to self
+	patch.Parent = patch
+
 	// Create new modules list
 	patch.Modules = list.New()
 
@@ -91,18 +94,20 @@ type OutletModule struct {
 
 // NewInletModule creates a new patch inlet module
 func NewInletModule(inlet *Inlet, buflen int32) *InletModule {
-	return &InletModule{
-		BaseModule: NewBaseModule(0, 1, buflen),
-		inlet:      inlet,
-	}
+	inletModule := new(InletModule)
+	inletModule.BaseModule = NewBaseModule(0, 1, buflen)
+	inletModule.Parent = inletModule
+	inletModule.inlet = inlet
+	return inletModule
 }
 
 // NewOutletModule creates a new patch outlet module
 func NewOutletModule(outlet *Outlet, buflen int32) *OutletModule {
-	return &OutletModule{
-		BaseModule: NewBaseModule(1, 0, buflen),
-		outlet:     outlet,
-	}
+	outletModule := new(OutletModule)
+	outletModule.BaseModule = NewBaseModule(1, 0, buflen)
+	outletModule.Parent = outletModule
+	outletModule.outlet = outlet
+	return outletModule
 }
 
 // DSP processor for patch inlet, copy patch inlet samples to module outlet

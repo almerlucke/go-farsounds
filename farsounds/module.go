@@ -27,10 +27,14 @@ type Module interface {
 	Cleanup()
 	GetInlets() []*Inlet
 	GetOutlets() []*Outlet
+	Connect(out int, otherModule Module, in int)
+	Disconnect(out int, otherModule Module, in int)
+	IsConnected(out int, otherModule Module, in int) bool
 }
 
 // BaseModule is the base module that implements all module interface methods
 type BaseModule struct {
+	Parent    Module
 	Inlets    []*Inlet
 	Outlets   []*Outlet
 	Processed bool
@@ -39,6 +43,9 @@ type BaseModule struct {
 // NewBaseModule creates a new basic module
 func NewBaseModule(numInlets int, numOutlets int, buflen int32) *BaseModule {
 	module := new(BaseModule)
+
+	// Set self as parent
+	module.Parent = module
 
 	// Create inlet and outlet slices
 	module.Inlets = make([]*Inlet, numInlets)
@@ -64,22 +71,22 @@ func NewBaseModule(numInlets int, numOutlets int, buflen int32) *BaseModule {
 }
 
 // PrepareDSP prepares for DSP
-func (module *BaseModule) PrepareDSP() {
-	module.Processed = false
+func (baseModule *BaseModule) PrepareDSP() {
+	baseModule.Processed = false
 }
 
 // DSP prepares inlets, calls DSP on connected modules
-func (module *BaseModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (baseModule *BaseModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 	// Check if we already processed for this DSP cycle, if so return
-	if module.Processed {
+	if baseModule.Processed {
 		return
 	}
 
 	// Set to processed to prevent infinite process loops
-	module.Processed = true
+	baseModule.Processed = true
 
 	// First process all inlet connections and get samples for input buffers
-	for _, inlet := range module.Inlets {
+	for _, inlet := range baseModule.Inlets {
 		inBuffer := inlet.Buffer
 
 		// Zero out inlet buffer
@@ -107,30 +114,32 @@ func (module *BaseModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 }
 
 // Cleanup disconnects inlets and outlets to break cyclic references and calls CleanupFunction
-func (module *BaseModule) Cleanup() {
+func (baseModule *BaseModule) Cleanup() {
 	// Clear references to inlets, breaking any cyclic reference so GC can reclaim objects
-	for i := 0; i < len(module.Inlets); i++ {
-		module.Inlets[i] = nil
+	for i := 0; i < len(baseModule.Inlets); i++ {
+		baseModule.Inlets[i] = nil
 	}
 
 	// Clear references to outlets, breaking any cyclic reference so GC can reclaim objects
-	for i := 0; i < len(module.Outlets); i++ {
-		module.Outlets[i] = nil
+	for i := 0; i < len(baseModule.Outlets); i++ {
+		baseModule.Outlets[i] = nil
 	}
 }
 
 // GetInlets get inlets
-func (module *BaseModule) GetInlets() []*Inlet {
-	return module.Inlets
+func (baseModule *BaseModule) GetInlets() []*Inlet {
+	return baseModule.Inlets
 }
 
 // GetOutlets get outlets
-func (module *BaseModule) GetOutlets() []*Outlet {
-	return module.Outlets
+func (baseModule *BaseModule) GetOutlets() []*Outlet {
+	return baseModule.Outlets
 }
 
-// IsConnected checks if there is already a connection between two modules
-func IsConnected(module Module, out int, otherModule Module, in int) bool {
+// IsConnected checks if two modules are connected
+func (baseModule *BaseModule) IsConnected(out int, otherModule Module, in int) bool {
+	module := baseModule.Parent
+
 	outlets := module.GetOutlets()
 	inlets := otherModule.GetInlets()
 
@@ -151,12 +160,14 @@ func IsConnected(module Module, out int, otherModule Module, in int) bool {
 	return false
 }
 
-// Connect output of this module to input of another module
-func Connect(module Module, out int, otherModule Module, in int) {
+// Connect two modules
+func (baseModule *BaseModule) Connect(out int, otherModule Module, in int) {
+	module := baseModule.Parent
+
 	outlets := module.GetOutlets()
 	inlets := otherModule.GetInlets()
 
-	if out < 0 || in < 0 || out >= len(outlets) || in >= len(inlets) || IsConnected(module, out, otherModule, in) {
+	if out < 0 || in < 0 || out >= len(outlets) || in >= len(inlets) || module.IsConnected(out, otherModule, in) {
 		return
 	}
 
@@ -175,8 +186,10 @@ func Connect(module Module, out int, otherModule Module, in int) {
 	_ = inlets[in].Connections.PushBack(inConn)
 }
 
-// Disconnect a module from another module
-func Disconnect(module Module, out int, otherModule Module, in int) {
+// Disconnect two modules
+func (baseModule *BaseModule) Disconnect(out int, otherModule Module, in int) {
+	module := baseModule.Parent
+
 	outlets := module.GetOutlets()
 	inlets := otherModule.GetInlets()
 
