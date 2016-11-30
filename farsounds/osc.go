@@ -25,13 +25,25 @@ func (osc *Osc) Next(phaseMod float64) float64 {
 	Module based oscillator plus Processor interface methods
 */
 
+// OscModule is an oscillator module
+type OscModule struct {
+	*BaseModule
+	*Osc
+}
+
 // NewOscModule creates a new osc module
-func NewOscModule(table WaveTable, phase float64, inc float64, amp float64, buflen int32) *Module {
-	return NewModule(3, 1, buflen, NewOsc(table, phase, inc, amp))
+func NewOscModule(table WaveTable, phase float64, inc float64, amp float64, buflen int32) *OscModule {
+	return &OscModule{
+		BaseModule: NewBaseModule(3, 1, buflen),
+		Osc:        NewOsc(table, phase, inc, amp),
+	}
 }
 
 // DSP fills output buffer for this osc module with samples
-func (osc *Osc) DSP(module *Module, buflen int32, timestamp int64, samplerate int32) {
+func (module *OscModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+	// First call base module dsp
+	module.BaseModule.DSP(buflen, timestamp, samplerate)
+
 	var pmodInput []float64
 	var fmodInput []float64
 	var ampInput []float64
@@ -60,17 +72,14 @@ func (osc *Osc) DSP(module *Module, buflen int32, timestamp int64, samplerate in
 
 		if fmodInput != nil {
 			inc := fmodInput[i] / float64(samplerate)
-			osc.Inc = inc
+			module.Inc = inc
 		}
 
 		if ampInput != nil {
 			amp := ampInput[i]
-			osc.Amplitude = amp
+			module.Amplitude = amp
 		}
 
-		output[i] = osc.Next(pmod)
+		output[i] = module.Next(pmod)
 	}
 }
-
-// Cleanup is mandatory, does nothing for osc
-func (osc *Osc) Cleanup(module *Module) {}

@@ -16,29 +16,29 @@ type Outlet Inlet
 
 // Connection to an inlet/outlet index of a module
 type Connection struct {
-	To    *Module
+	To    Module
 	Index int
 }
 
-// Processor is the interface for the actual DSP and cleanup
-type Processor interface {
-	DSP(module *Module, buflen int32, timestamp int64, samplerate int32)
-	Cleanup(module *Module)
+// Module interface
+type Module interface {
+	PrepareDSP()
+	DSP(buflen int32, timestamp int64, samplerate int32)
+	Cleanup()
+	GetInlets() []*Inlet
+	GetOutlets() []*Outlet
 }
 
-// Module that can be connected to other modules and that can generate samples
-type Module struct {
+// BaseModule is the base module that implements all module interface methods
+type BaseModule struct {
 	Inlets    []*Inlet
 	Outlets   []*Outlet
 	Processed bool
-	Processor Processor
 }
 
-// NewModule creates a new module
-func NewModule(numInlets int, numOutlets int, buflen int32, processor Processor) *Module {
-	module := new(Module)
-
-	module.Processor = processor
+// NewBaseModule creates a new basic module
+func NewBaseModule(numInlets int, numOutlets int, buflen int32) *BaseModule {
+	module := new(BaseModule)
 
 	// Create inlet and outlet slices
 	module.Inlets = make([]*Inlet, numInlets)
@@ -63,8 +63,13 @@ func NewModule(numInlets int, numOutlets int, buflen int32, processor Processor)
 	return module
 }
 
-// DSP prepares inlets, calls DSP on connected modules and finally calls DSPFunction
-func (module *Module) DSP(buflen int32, timestamp int64, samplerate int32) {
+// PrepareDSP prepares for DSP
+func (module *BaseModule) PrepareDSP() {
+	module.Processed = false
+}
+
+// DSP prepares inlets, calls DSP on connected modules
+func (module *BaseModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 	// Check if we already processed for this DSP cycle, if so return
 	if module.Processed {
 		return
@@ -91,7 +96,7 @@ func (module *Module) DSP(buflen int32, timestamp int64, samplerate int32) {
 			conn.To.DSP(buflen, timestamp, samplerate)
 
 			// Get output buffer for this connection
-			outBuffer := conn.To.Outlets[conn.Index].Buffer
+			outBuffer := conn.To.GetOutlets()[conn.Index].Buffer
 
 			// Add output to input buffer
 			for i, v := range outBuffer {
@@ -99,16 +104,10 @@ func (module *Module) DSP(buflen int32, timestamp int64, samplerate int32) {
 			}
 		}
 	}
-
-	// All inlets buffers are filled with samples now we call the
-	// Processor DSP method to generate samples for the outlet buffers
-	if module.Processor != nil {
-		module.Processor.DSP(module, buflen, timestamp, samplerate)
-	}
 }
 
 // Cleanup disconnects inlets and outlets to break cyclic references and calls CleanupFunction
-func (module *Module) Cleanup() {
+func (module *BaseModule) Cleanup() {
 	// Clear references to inlets, breaking any cyclic reference so GC can reclaim objects
 	for i := 0; i < len(module.Inlets); i++ {
 		module.Inlets[i] = nil
@@ -118,21 +117,30 @@ func (module *Module) Cleanup() {
 	for i := 0; i < len(module.Outlets); i++ {
 		module.Outlets[i] = nil
 	}
+}
 
-	if module.Processor != nil {
-		module.Processor.Cleanup(module)
-	}
+// GetInlets get inlets
+func (module *BaseModule) GetInlets() []*Inlet {
+	return module.Inlets
+}
+
+// GetOutlets get outlets
+func (module *BaseModule) GetOutlets() []*Outlet {
+	return module.Outlets
 }
 
 // IsConnected checks if there is already a connection between two modules
-func (module *Module) IsConnected(out int, otherModule *Module, in int) bool {
-	if out < 0 || in < 0 || out >= len(module.Outlets) || in >= len(otherModule.Inlets) {
+func IsConnected(module Module, out int, otherModule Module, in int) bool {
+	outlets := module.GetOutlets()
+	inlets := otherModule.GetInlets()
+
+	if out < 0 || in < 0 || out >= len(outlets) || in >= len(inlets) {
 		return false
 	}
 
 	// Loop through all connections on the out outlet to check if we already
 	// connect to the in inlet of the other module
-	for e := module.Outlets[out].Connections.Front(); e != nil; e = e.Next() {
+	for e := outlets[out].Connections.Front(); e != nil; e = e.Next() {
 		conn := e.Value.(*Connection)
 
 		if conn.To == otherModule && conn.Index == in {
@@ -144,9 +152,11 @@ func (module *Module) IsConnected(out int, otherModule *Module, in int) bool {
 }
 
 // Connect output of this module to input of another module
-func (module *Module) Connect(out int, otherModule *Module, in int) {
-	if out < 0 || in < 0 || out >= len(module.Outlets) || in >= len(otherModule.Inlets) ||
-		module.IsConnected(out, otherModule, in) {
+func Connect(module Module, out int, otherModule Module, in int) {
+	outlets := module.GetOutlets()
+	inlets := otherModule.GetInlets()
+
+	if out < 0 || in < 0 || out >= len(outlets) || in >= len(inlets) || IsConnected(module, out, otherModule, in) {
 		return
 	}
 
@@ -161,32 +171,35 @@ func (module *Module) Connect(out int, otherModule *Module, in int) {
 	inConn.Index = out
 
 	// Add output to outlet and input to inlet
-	_ = module.Outlets[out].Connections.PushBack(outConn)
-	_ = otherModule.Inlets[in].Connections.PushBack(inConn)
+	_ = outlets[out].Connections.PushBack(outConn)
+	_ = inlets[in].Connections.PushBack(inConn)
 }
 
 // Disconnect a module from another module
-func (module *Module) Disconnect(out int, otherModule *Module, in int) {
-	if out < 0 || in < 0 || out >= len(module.Outlets) || in >= len(otherModule.Inlets) {
+func Disconnect(module Module, out int, otherModule Module, in int) {
+	outlets := module.GetOutlets()
+	inlets := otherModule.GetInlets()
+
+	if out < 0 || in < 0 || out >= len(outlets) || in >= len(inlets) {
 		return
 	}
 
 	// Loop through outputs from out outlet, if we find connection, remove it
-	for e := module.Outlets[out].Connections.Front(); e != nil; e = e.Next() {
+	for e := outlets[out].Connections.Front(); e != nil; e = e.Next() {
 		conn := e.Value.(*Connection)
 
 		if conn.To == otherModule && conn.Index == in {
-			module.Outlets[out].Connections.Remove(e)
+			outlets[out].Connections.Remove(e)
 			break
 		}
 	}
 
 	// Loop through inputs from in inlet, if we find connection, remove it
-	for e := otherModule.Inlets[in].Connections.Front(); e != nil; e = e.Next() {
+	for e := inlets[in].Connections.Front(); e != nil; e = e.Next() {
 		conn := e.Value.(*Connection)
 
 		if conn.To == module && conn.Index == out {
-			otherModule.Inlets[in].Connections.Remove(e)
+			inlets[in].Connections.Remove(e)
 			break
 		}
 	}
