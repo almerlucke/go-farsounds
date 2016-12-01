@@ -7,7 +7,9 @@ type Buffer []float64
 
 // Inlet holds connections and the input buffer
 type Inlet struct {
-	Buffer      Buffer
+	// Buffer to hold input samples
+	Buffer Buffer
+	// List of incoming connections
 	Connections *list.List
 }
 
@@ -16,7 +18,10 @@ type Outlet Inlet
 
 // Connection to an inlet/outlet index of a module
 type Connection struct {
-	To    Module
+	// The module connected to
+	To Module
+
+	// The index of the inlet or outlet of the connected module
 	Index int
 }
 
@@ -24,36 +29,63 @@ type Connection struct {
 type Module interface {
 	// Prepare for DSP
 	PrepareDSP()
+
 	// DSP generate samples
 	DSP(buflen int32, timestamp int64, samplerate int32)
+
 	// Perform Cleanup to release any resources
 	Cleanup()
+
 	// Get slice of inlets
 	GetInlets() []*Inlet
+
 	// Get slice of outlets
 	GetOutlets() []*Outlet
+
 	// Connect to another module
 	Connect(out int, otherModule Module, in int)
+
 	// Disconnect from another module
 	Disconnect(out int, otherModule Module, in int)
+
 	// Check if connected to another module
 	IsConnected(out int, otherModule Module, in int) bool
-	// Get unique identifier for this module
+
+	// Get unique identifier for this module, will be used for message addressing
+	// and maybe other future purposes
 	GetIdentifier() string
-	// Set unique identifier for this module
+
+	// Set unique identifier for this module. An identifier should contain
+	// alphanumeric characters only, there is no forced check, but this
+	// will assure that the identifier is compatible with resolving addresses
 	SetIdentifier(string)
-	// Send a message to a module at address
+
+	// Send a message to a module at address, address is a forward slash separated
+	// path string like: /patch1/innerpatch2/osc1
 	SendMessage(address string, message interface{})
+
 	// Message for this module
 	Message(message interface{})
 }
 
 // BaseModule is the base module that implements all module interface methods
 type BaseModule struct {
-	Parent     Module
-	Inlets     []*Inlet
-	Outlets    []*Outlet
-	Processed  bool
+	// Parent module instance, this should always be set by
+	// modules that embed the base module
+	Parent Module
+
+	// An array of inlets
+	Inlets []*Inlet
+
+	// An array of outlets
+	Outlets []*Outlet
+
+	// Flag if the module DSP has been processed already, used to prevent
+	// infinite DSP loops if one of the modules has a cyclic connection
+	Processed bool
+
+	// Identifier to identify this module, will be used for message addressing
+	// and maybe other future purposes
 	Identifier string
 }
 
