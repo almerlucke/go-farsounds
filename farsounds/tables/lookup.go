@@ -1,6 +1,8 @@
-package farsounds
+package tables
 
-import "math"
+import (
+	"math"
+)
 
 // Lookup holds table data
 type Lookup struct {
@@ -21,6 +23,5 @@ func (lookup *Lookup) Look(phase float64) float64 {
 	table := lookup.table
 	v1 := table[int(firstIndex)]
 	v2 := table[int(secondIndex)]
-
 	return v1 + (v2-v1)*fraction
 }

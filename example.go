@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/almerlucke/go-farsounds/farsounds"
+	"github.com/almerlucke/go-farsounds/farsounds/components"
+	"github.com/almerlucke/go-farsounds/farsounds/io"
+	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
 func main() {
@@ -15,17 +18,17 @@ func main() {
 	buflen := int32(1024)
 
 	patch := farsounds.NewPatch(1, 1, buflen)
-	oscModule1 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
+	oscModule1 := components.NewOscModule(tables.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
 	patch.Modules.PushBack(oscModule1)
 	patch.InletModules[0].Connect(0, oscModule1, 0)
 	oscModule1.Connect(0, patch.OutletModules[0], 0)
 
-	oscModule2 := farsounds.NewOscModule(farsounds.SineTable, 0.0, 4.0/samplerate, 100.0/samplerate, buflen)
+	oscModule2 := components.NewOscModule(tables.SineTable, 0.0, 4.0/samplerate, 100.0/samplerate, buflen)
 	oscModule2.Connect(0, patch, 0)
 
 	outputPath := "/users/almerlucke/Desktop/output"
 
-	writer, err := farsounds.OpenSoundWriter(outputPath, 1, int32(samplerate), true)
+	writer, err := io.OpenSoundWriter(outputPath, 1, int32(samplerate), true)
 	if err != nil {
 		fmt.Printf("normalize err: %v\n", err)
 		return

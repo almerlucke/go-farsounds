@@ -1,4 +1,4 @@
-package farsounds
+package io
 
 import (
 	"math"

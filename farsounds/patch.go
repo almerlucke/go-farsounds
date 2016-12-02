@@ -1,9 +1,6 @@
 package farsounds
 
-import (
-	"container/list"
-	"strings"
-)
+import "container/list"
 
 /*
    Patch inlet and outlet processors and modules creation. The patch inlet and
@@ -154,12 +151,9 @@ func (patch *Patch) Cleanup() {
 // and see if it matches an identifier from the patch modules. If it does, check
 // if the address is completely resolved, if not send the message further down
 // the line, else deliver the message to the module
-func (patch *Patch) SendMessage(address string, message interface{}) {
-	path := strings.TrimSuffix(strings.TrimPrefix(address, "/"), "/")
-	components := strings.Split(path, "/")
-
-	if len(components) > 0 {
-		identifier := components[0]
+func (patch *Patch) SendMessage(address *Address, message Message) {
+	if address.IsValid() {
+		identifier := address.CurrentIdentifier()
 
 		// Loop through all modules
 		for e := patch.Modules.Front(); e != nil; e = e.Next() {
@@ -169,12 +163,14 @@ func (patch *Patch) SendMessage(address string, message interface{}) {
 			// check if their identifier matches the first address
 			// component identifier
 			if moduleIdentifier == identifier {
-				if len(components) > 1 {
-					// If we have more than 1 path component, pass on the message
-					module.SendMessage(strings.Join(components[1:], "/"), message)
-				} else {
+				if address.IsResolved() {
 					// We found the address, deliver the message
 					module.Message(message)
+				} else {
+					// Go to next component of address
+					address.Next()
+					// Message is not yet on its final destination, pass it on
+					module.SendMessage(address, message)
 				}
 
 				break

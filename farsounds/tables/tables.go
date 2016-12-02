@@ -1,4 +1,4 @@
-package farsounds
+package tables
 
 import "math"
 

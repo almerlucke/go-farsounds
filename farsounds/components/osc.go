@@ -1,16 +1,22 @@
-package farsounds
+package components
+
+import "github.com/almerlucke/go-farsounds/farsounds"
+import "github.com/almerlucke/go-farsounds/farsounds/tables"
 
 // Osc uses a phasor to do a lookup
 type Osc struct {
-	*Lookup
+	// Lookup table
+	*tables.Lookup
+	// Phasor for lookup
 	*Phasor
+	// Amplitude of output
 	Amplitude float64
 }
 
 // NewOsc creates a new table lookup oscillator
 func NewOsc(table []float64, phase float64, inc float64, amp float64) *Osc {
 	osc := new(Osc)
-	osc.Lookup = NewLookup(table)
+	osc.Lookup = tables.NewLookup(table)
 	osc.Phasor = NewPhasor(phase, inc)
 	osc.Amplitude = amp
 	return osc
@@ -27,14 +33,16 @@ func (osc *Osc) Next(phaseMod float64) float64 {
 
 // OscModule is an oscillator module
 type OscModule struct {
-	*BaseModule
+	// Inherit from BaseModule
+	*farsounds.BaseModule
+	// Inherit from Osc
 	*Osc
 }
 
 // NewOscModule creates a new osc module
-func NewOscModule(table WaveTable, phase float64, inc float64, amp float64, buflen int32) *OscModule {
+func NewOscModule(table tables.WaveTable, phase float64, inc float64, amp float64, buflen int32) *OscModule {
 	oscModule := new(OscModule)
-	oscModule.BaseModule = NewBaseModule(3, 1, buflen)
+	oscModule.BaseModule = farsounds.NewBaseModule(3, 1, buflen)
 	oscModule.Parent = oscModule
 	oscModule.Osc = NewOsc(table, phase, inc, amp)
 	return oscModule

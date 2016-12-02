@@ -62,10 +62,10 @@ type Module interface {
 
 	// Send a message to a module at address, address is a forward slash separated
 	// path string like: /patch1/innerpatch2/osc1
-	SendMessage(address string, message interface{})
+	SendMessage(address *Address, message Message)
 
 	// Message for this module
-	Message(message interface{})
+	Message(message Message)
 }
 
 // BaseModule is the base module that implements all module interface methods
@@ -278,7 +278,7 @@ func (baseModule *BaseModule) SetIdentifier(identifier string) {
 }
 
 // SendMessage STUB
-func (baseModule *BaseModule) SendMessage(address string, message interface{}) {}
+func (baseModule *BaseModule) SendMessage(address *Address, message Message) {}
 
 // Message STUB
-func (baseModule *BaseModule) Message(message interface{}) {}
+func (baseModule *BaseModule) Message(message Message) {}

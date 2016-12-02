@@ -1,4 +1,4 @@
-package farsounds
+package components
 
 // Phasor phases between 0 - 1 with inc steps
 type Phasor struct {
