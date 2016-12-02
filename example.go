@@ -19,11 +19,23 @@ func main() {
 
 	patch := farsounds.NewPatch(1, 1, buflen)
 	oscModule1 := components.NewOscModule(tables.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
-	patch.Modules.PushBack(oscModule1)
 	patch.InletModules[0].Connect(0, oscModule1, 0)
 	oscModule1.Connect(0, patch.OutletModules[0], 0)
+	patch.Modules.PushBack(oscModule1)
 
-	oscModule2 := components.NewOscModule(tables.SineTable, 0.0, 4.0/samplerate, 100.0/samplerate, buflen)
+	adsrModule := components.NewADSRModule(buflen)
+	adsrModule.SetAttackRate(0.1 * samplerate)
+	adsrModule.SetDecayRate(0.2 * samplerate)
+	adsrModule.SetReleaseRate(0.6 * samplerate)
+	adsrModule.SetSustainLevel(0.1)
+	adsrModule.Connect(0, oscModule1, 2)
+	patch.Modules.PushBack(adsrModule)
+
+	gateModule := components.NewSquareModule(0, 0.7/samplerate, 1, buflen)
+	gateModule.Connect(0, adsrModule, 0)
+	patch.Modules.PushBack(gateModule)
+
+	oscModule2 := components.NewOscModule(tables.SineTable, 0.0, 57.0/samplerate, 100.0/samplerate, buflen)
 	oscModule2.Connect(0, patch, 0)
 
 	outputPath := "/users/almerlucke/Desktop/output"
@@ -34,9 +46,11 @@ func main() {
 		return
 	}
 
+	numSeconds := 4.0
 	timestamp := int64(0)
+	numCycles := int64((numSeconds * samplerate) / float64(buflen))
 
-	for i := 0; i < 200; i++ {
+	for i := int64(0); i < numCycles; i++ {
 		patch.PrepareDSP()
 		oscModule2.PrepareDSP()
 		patch.DSP(buflen, timestamp, int32(samplerate))
@@ -47,10 +61,6 @@ func main() {
 			return
 		}
 		timestamp += int64(buflen)
-
-		if i == 100 {
-			oscModule2.Disconnect(0, patch, 0)
-		}
 	}
 
 	writer.Close()

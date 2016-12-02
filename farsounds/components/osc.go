@@ -22,9 +22,9 @@ func NewOsc(table []float64, phase float64, inc float64, amp float64) *Osc {
 	return osc
 }
 
-// Next sample please
-func (osc *Osc) Next(phaseMod float64) float64 {
-	return osc.Look(osc.Phasor.Next(phaseMod)) * osc.Amplitude
+// Process sample please
+func (osc *Osc) Process(phaseMod float64) float64 {
+	return osc.Look(osc.Phasor.Process(phaseMod)) * osc.Amplitude
 }
 
 /*
@@ -89,6 +89,6 @@ func (module *OscModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 			module.Amplitude = amp
 		}
 
-		output[i] = module.Next(pmod)
+		output[i] = module.Process(pmod)
 	}
 }

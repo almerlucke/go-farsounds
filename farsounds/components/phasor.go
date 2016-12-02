@@ -14,8 +14,8 @@ func NewPhasor(phase float64, inc float64) *Phasor {
 	return phasor
 }
 
-// Next sample please
-func (phasor *Phasor) Next(phaseMod float64) float64 {
+// Process sample please
+func (phasor *Phasor) Process(phaseMod float64) float64 {
 	out := phasor.Phase + phaseMod
 
 	// Clip out between 0.0 and 1.0
