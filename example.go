@@ -11,6 +11,10 @@ import (
 	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
+func setup() {
+	farsounds.RegisterWaveTable("sine", tables.SineTable)
+}
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -38,9 +42,7 @@ func main() {
 	oscModule2 := components.NewOscModule(tables.SineTable, 0.0, 57.0/samplerate, 100.0/samplerate, buflen)
 	oscModule2.Connect(0, patch, 0)
 
-	outputPath := "/users/almerlucke/Desktop/output"
-
-	writer, err := io.OpenSoundWriter(outputPath, 1, int32(samplerate), true)
+	writer, err := io.OpenSoundWriter("/users/almerlucke/Desktop/output", 1, int32(samplerate), true)
 	if err != nil {
 		fmt.Printf("normalize err: %v\n", err)
 		return
