@@ -3,7 +3,7 @@
     "bufferLength": 512,
     "patch": {
         "numInlets": 0,
-        "numOutlets": 1,
+        "numOutlets": 2,
         "modules": {
             "osc1": {
                 "type": "osc",
@@ -17,7 +17,22 @@
                 "type": "osc",
                 "settings": {
                     "table": "sine",
-                    "frequency": 1000
+                    "frequency": 850
+                }
+            },
+            "osc3": {
+                "type": "osc",
+                "settings": {
+                    "table": "sine",
+                    "frequency": 8.5,
+                    "amplitude": 0.00222
+                }
+            },
+            "osc4": {
+                "type": "osc",
+                "settings": {
+                    "table": "sine",
+                    "frequency": 841
                 }
             }
         },
@@ -27,9 +42,19 @@
             "to": "osc2",
             "inlet": 0
         }, {
+            "from": "osc3",
+            "outlet": 0,
+            "to": "osc4",
+            "inlet": 0
+        }, {
             "from": "osc2",
             "outlet": 0,
             "to": "__outlet1",
+            "inlet": 0
+        }, {
+            "from": "osc4",
+            "outlet": 0,
+            "to": "__outlet2",
             "inlet": 0
         }]
     }
