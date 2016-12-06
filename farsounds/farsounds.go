@@ -3,8 +3,9 @@ package farsounds
 import (
 	"errors"
 
-	"aliensareamongus.com/careibu/utils/jsonx"
 	"github.com/almerlucke/go-farsounds/farsounds/io"
+	"github.com/almerlucke/go-farsounds/farsounds/utils/filex"
+	"github.com/almerlucke/go-farsounds/farsounds/utils/jsonx"
 )
 
 // ScriptMainDescriptor describes main script content
@@ -16,28 +17,28 @@ type ScriptMainDescriptor struct {
 
 // LoadMainScript containing samplerate, bufferlength and main patch
 func LoadMainScript(filePath string) (*Patch, error) {
-	mainDescriptor := ScriptMainDescriptor{}
+	_patch, err := filex.EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
+		mainDescriptor := ScriptMainDescriptor{}
 
-	err := jsonx.UnmarshalFromFile(filePath, &mainDescriptor)
+		err := jsonx.UnmarshalFromFile(basePath, &mainDescriptor)
+		if err != nil {
+			return nil, err
+		}
+
+		return Registry.NewModule(
+			"patch",
+			"main",
+			mainDescriptor.PatchSettings,
+			mainDescriptor.BufferLength,
+			mainDescriptor.SampleRate,
+		)
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	_patch, err := Registry.NewModule(
-		"patch",
-		"main",
-		mainDescriptor.PatchSettings,
-		mainDescriptor.BufferLength,
-		mainDescriptor.SampleRate,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	patch := _patch.(*Patch)
-
-	return patch, nil
+	return _patch.(*Patch), nil
 }
 
 // SoundFileFromPatch generate soundfile from patch

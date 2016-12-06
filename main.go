@@ -24,11 +24,10 @@ func setup() {
 func main() {
 	setup()
 
-	err := farsounds.SoundFileFromScript(
-		"exampleScripts/stereoPatch.json",
-		"/users/almerlucke/Desktop/output",
-		4.0,
-	)
+	inputJSONFile := "exampleScripts/stereoPatch.json"
+	outputSoundFile := "/users/almerlucke/Desktop/output"
+
+	err := farsounds.SoundFileFromScript(inputJSONFile, outputSoundFile, 4.0)
 
 	if err != nil {
 		fmt.Printf("err %v\n", err)

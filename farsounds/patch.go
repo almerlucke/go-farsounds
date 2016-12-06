@@ -4,6 +4,9 @@ import (
 	"container/list"
 	"fmt"
 
+	"github.com/almerlucke/go-farsounds/farsounds/utils/filex"
+	"github.com/almerlucke/go-farsounds/farsounds/utils/jsonx"
+
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -22,7 +25,7 @@ type ScriptConnectionDescriptor struct {
 // ScriptModuleDescriptor for script mapping
 type ScriptModuleDescriptor struct {
 	Type     string
-	Settings map[string]interface{}
+	Settings interface{}
 }
 
 // ScriptPatchSettingsDescriptor for script mapping
@@ -157,12 +160,37 @@ func NewPatch(numInlets int, numOutlets int, buflen int32, sr float64) *Patch {
 	return patch
 }
 
+// LoadPatchScript loads a patch settings from script
+func LoadPatchScript(filePath string) (interface{}, error) {
+	return filex.EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
+		settings := map[string]interface{}{}
+
+		err := jsonx.UnmarshalFromFile(basePath, &settings)
+		if err != nil {
+			return nil, err
+		}
+
+		return settings, nil
+	})
+}
+
 // PatchFactory creates patches from settings
 func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error) {
+	var err error
+
+	// If settings is a string, it represents a file path
+	// for the settings script
+	if filePath, ok := settings.(string); ok {
+		settings, err = LoadPatchScript(filePath)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Create patch descriptor from raw map
 	pdesc := ScriptPatchSettingsDescriptor{}
 
-	err := mapstructure.Decode(settings, &pdesc)
+	err = mapstructure.Decode(settings, &pdesc)
 	if err != nil {
 		return nil, err
 	}

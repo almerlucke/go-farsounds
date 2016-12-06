@@ -20,20 +20,9 @@
                     "frequency": 850
                 }
             },
-            "osc3": {
-                "type": "osc",
-                "settings": {
-                    "table": "sine",
-                    "frequency": 8.5,
-                    "amplitude": 0.00222
-                }
-            },
-            "osc4": {
-                "type": "osc",
-                "settings": {
-                    "table": "sine",
-                    "frequency": 841
-                }
+            "patch1": {
+                "type": "patch",
+                "settings": "innerScripts/innerPatch.json"
             }
         },
         "connections": [{
