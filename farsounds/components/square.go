@@ -43,18 +43,44 @@ type SquareModule struct {
 }
 
 // NewSquareModule creates a new square module
-func NewSquareModule(phase float64, inc float64, amp float64, buflen int32) *SquareModule {
+func NewSquareModule(phase float64, freq float64, amp float64, buflen int32, sr float64) *SquareModule {
 	squareModule := new(SquareModule)
-	squareModule.BaseModule = farsounds.NewBaseModule(3, 1, buflen)
+	squareModule.BaseModule = farsounds.NewBaseModule(3, 1, buflen, sr)
 	squareModule.Parent = squareModule
-	squareModule.Square = NewSquare(phase, inc, amp)
+	squareModule.Square = NewSquare(phase, freq/float64(sr), amp)
 	return squareModule
 }
 
+// SquareModuleFactory creates square modules
+func SquareModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds.Module, error) {
+	phase := 0.0
+	freq := 100.0
+	amp := 1.0
+
+	if settingsMap, ok := settings.(map[string]interface{}); ok {
+		if f, ok := settingsMap["frequency"].(float64); ok {
+			freq = f
+		}
+
+		if p, ok := settingsMap["phase"].(float64); ok {
+			phase = p
+		}
+
+		if a, ok := settingsMap["amplitude"].(float64); ok {
+			amp = a
+		}
+	}
+
+	return NewSquareModule(phase, freq, amp, buflen, sr), nil
+}
+
 // DSP fills output buffer for this square module with samples
-func (module *SquareModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (module *SquareModule) DSP(timestamp int64) {
 	// First call base module dsp
-	module.BaseModule.DSP(buflen, timestamp, samplerate)
+	module.BaseModule.DSP(timestamp)
+
+	buflen := module.GetBufferLength()
+	sr := module.GetSampleRate()
 
 	var pmodInput []float64
 	var fmodInput []float64
@@ -83,7 +109,7 @@ func (module *SquareModule) DSP(buflen int32, timestamp int64, samplerate int32)
 		}
 
 		if fmodInput != nil {
-			inc := fmodInput[i] / float64(samplerate)
+			inc := fmodInput[i] / sr
 			module.Inc = inc
 		}
 

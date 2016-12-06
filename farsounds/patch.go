@@ -1,6 +1,37 @@
 package farsounds
 
-import "container/list"
+import (
+	"container/list"
+	"fmt"
+
+	"github.com/mitchellh/mapstructure"
+)
+
+/*
+	Patch script mapping
+*/
+
+// ScriptConnectionDescriptor for script mapping
+type ScriptConnectionDescriptor struct {
+	From   string
+	Outlet int
+	To     string
+	Inlet  int
+}
+
+// ScriptModuleDescriptor for script mapping
+type ScriptModuleDescriptor struct {
+	Type     string
+	Settings map[string]interface{}
+}
+
+// ScriptPatchSettingsDescriptor for script mapping
+type ScriptPatchSettingsDescriptor struct {
+	NumInlets   int
+	NumOutlets  int
+	Modules     map[string]interface{}
+	Connections []interface{}
+}
 
 /*
    Patch inlet and outlet processors and modules creation. The patch inlet and
@@ -26,18 +57,18 @@ type OutletModule struct {
 }
 
 // NewInletModule creates a new patch inlet module
-func NewInletModule(inlet *Inlet, buflen int32) *InletModule {
+func NewInletModule(inlet *Inlet, buflen int32, sr float64) *InletModule {
 	inletModule := new(InletModule)
-	inletModule.BaseModule = NewBaseModule(0, 1, buflen)
+	inletModule.BaseModule = NewBaseModule(0, 1, buflen, sr)
 	inletModule.Parent = inletModule
 	inletModule.inlet = inlet
 	return inletModule
 }
 
 // DSP processor for patch inlet, copy patch inlet samples to module outlet
-func (module *InletModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (module *InletModule) DSP(timestamp int64) {
 	// First call base module dsp
-	module.BaseModule.DSP(buflen, timestamp, samplerate)
+	module.BaseModule.DSP(timestamp)
 
 	outBuffer := module.Outlets[0].Buffer
 	// Copy patch inlet buffer to outlet buffer
@@ -47,18 +78,18 @@ func (module *InletModule) DSP(buflen int32, timestamp int64, samplerate int32) 
 }
 
 // NewOutletModule creates a new patch outlet module
-func NewOutletModule(outlet *Outlet, buflen int32) *OutletModule {
+func NewOutletModule(outlet *Outlet, buflen int32, sr float64) *OutletModule {
 	outletModule := new(OutletModule)
-	outletModule.BaseModule = NewBaseModule(1, 0, buflen)
+	outletModule.BaseModule = NewBaseModule(1, 0, buflen, sr)
 	outletModule.Parent = outletModule
 	outletModule.outlet = outlet
 	return outletModule
 }
 
 // DSP processor for patch outlet, copy module inlet samples to patch outlet
-func (module *OutletModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (module *OutletModule) DSP(timestamp int64) {
 	// First call base module dsp
-	module.BaseModule.DSP(buflen, timestamp, samplerate)
+	module.BaseModule.DSP(timestamp)
 
 	outBuffer := module.outlet.Buffer
 	// Copy inlet buffer to patch outlet buffer
@@ -90,11 +121,11 @@ type Patch struct {
 }
 
 // NewPatch creates a new patch module
-func NewPatch(numInlets int, numOutlets int, buflen int32) *Patch {
+func NewPatch(numInlets int, numOutlets int, buflen int32, sr float64) *Patch {
 	patch := new(Patch)
 
 	// Set base module
-	patch.BaseModule = NewBaseModule(numInlets, numOutlets, buflen)
+	patch.BaseModule = NewBaseModule(numInlets, numOutlets, buflen, sr)
 
 	// Set parent ptr to self
 	patch.Parent = patch
@@ -106,24 +137,103 @@ func NewPatch(numInlets int, numOutlets int, buflen int32) *Patch {
 	patch.InletModules = make([]*InletModule, numInlets)
 
 	for i := 0; i < numInlets; i++ {
-		patch.InletModules[i] = NewInletModule(patch.Inlets[i], buflen)
-		patch.Modules.PushBack(patch.InletModules[i])
+		inletModule := NewInletModule(patch.Inlets[i], buflen, sr)
+		// Inlet modules are identified by __inlet + number
+		inletModule.SetIdentifier(fmt.Sprintf("__inlet%d", i+1))
+		patch.InletModules[i] = inletModule
+		patch.Modules.PushBack(inletModule)
 	}
 
 	// Create outlet modules
 	patch.OutletModules = make([]*OutletModule, numOutlets)
 	for i := 0; i < numOutlets; i++ {
-		patch.OutletModules[i] = NewOutletModule(patch.Outlets[i], buflen)
-		patch.Modules.PushBack(patch.OutletModules[i])
+		outletModule := NewOutletModule(patch.Outlets[i], buflen, sr)
+		// Outlet modules are identified by __outlet + number
+		outletModule.SetIdentifier(fmt.Sprintf("__outlet%d", i+1))
+		patch.OutletModules[i] = outletModule
+		patch.Modules.PushBack(outletModule)
 	}
 
 	return patch
 }
 
+// PatchFactory creates patches from settings
+func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error) {
+	// Create patch descriptor from raw map
+	pdesc := ScriptPatchSettingsDescriptor{}
+
+	err := mapstructure.Decode(settings, &pdesc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create new patch
+	patch := NewPatch(pdesc.NumInlets, pdesc.NumOutlets, buflen, sr)
+
+	// Modules lookup for making connections easier
+	modules := make(map[string]Module)
+
+	// Copy inlet modules to modules lookup so we can connect them by id
+	for _, inletModule := range patch.InletModules {
+		modules[inletModule.GetIdentifier()] = inletModule
+	}
+
+	// Copy outlet modules to modules lookup so we can connect them by id
+	for _, outletModule := range patch.OutletModules {
+		modules[outletModule.GetIdentifier()] = outletModule
+	}
+
+	// Loop through modules descriptions in map and create new modules
+	for moduleIdentifier, _mdesc := range pdesc.Modules {
+		// Try to get module descriptor
+		mdesc := ScriptModuleDescriptor{}
+		err := mapstructure.Decode(_mdesc, &mdesc)
+		if err != nil {
+			return nil, err
+		}
+
+		// Try to create a new module
+		module, err := Registry.NewModule(mdesc.Type, moduleIdentifier, mdesc.Settings, buflen, sr)
+		if err != nil {
+			return nil, err
+		}
+
+		// Add to modules lookup for creating connections
+		modules[moduleIdentifier] = module
+
+		// Add module to patch
+		patch.Modules.PushBack(module)
+	}
+
+	// Create connections
+	for _, _cdesc := range pdesc.Connections {
+		// Try to get connection descriptor
+		cdesc := ScriptConnectionDescriptor{}
+		err := mapstructure.Decode(_cdesc, &cdesc)
+		if err != nil {
+			return nil, err
+		}
+
+		from := modules[cdesc.From]
+		if from == nil {
+			continue
+		}
+
+		to := modules[cdesc.To]
+		if from == nil {
+			continue
+		}
+
+		from.Connect(cdesc.Outlet, to, cdesc.Inlet)
+	}
+
+	return patch, nil
+}
+
 // DSP processor for patch, perform DSP on internal modules
-func (patch *Patch) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (patch *Patch) DSP(timestamp int64) {
 	// First call base module dsp
-	patch.BaseModule.DSP(buflen, timestamp, samplerate)
+	patch.BaseModule.DSP(timestamp)
 
 	// Prepare all modules first
 	for e := patch.Modules.Front(); e != nil; e = e.Next() {
@@ -135,7 +245,7 @@ func (patch *Patch) DSP(buflen int32, timestamp int64, samplerate int32) {
 	// connected modules. The outlet modules will copy their outputs
 	// to the patch outlets
 	for _, outletModule := range patch.OutletModules {
-		outletModule.DSP(buflen, timestamp, samplerate)
+		outletModule.DSP(timestamp)
 	}
 }
 

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/almerlucke/go-farsounds/farsounds"
@@ -12,50 +14,105 @@ import (
 )
 
 func setup() {
-	farsounds.RegisterWaveTable("sine", tables.SineTable)
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	farsounds.Registry.RegisterWaveTable("sine", tables.SineTable)
+	farsounds.Registry.RegisterModuleFactory("osc", components.OscModuleFactory)
+	farsounds.Registry.RegisterModuleFactory("square", components.SquareModuleFactory)
+	farsounds.Registry.RegisterModuleFactory("patch", farsounds.PatchFactory)
+}
+
+/*
+patch := farsounds.NewPatch(1, 1, buflen, samplerate)
+oscModule1, _ := farsounds.Registry.NewModule("osc", "osc1", map[string]interface{}{
+	"phase":     0.0,
+	"frequency": 1000.0,
+	"amplitude": 1.0,
+	"table":     "sine",
+}, buflen, samplerate)
+
+patch.InletModules[0].Connect(0, oscModule1, 0)
+oscModule1.Connect(0, patch.OutletModules[0], 0)
+patch.Modules.PushBack(oscModule1)
+
+adsrModule := components.NewADSRModule(buflen, samplerate)
+adsrModule.SetAttackRate(0.1 * samplerate)
+adsrModule.SetDecayRate(0.2 * samplerate)
+adsrModule.SetReleaseRate(0.6 * samplerate)
+adsrModule.SetSustainLevel(0.1)
+adsrModule.Connect(0, oscModule1, 2)
+patch.Modules.PushBack(adsrModule)
+
+gateModule, _ := farsounds.Registry.NewModule("square", "square1", map[string]interface{}{
+	"phase":     0.0,
+	"frequency": 0.7,
+	"amplitude": 1.0,
+}, buflen, samplerate)
+
+gateModule.Connect(0, adsrModule, 0)
+patch.Modules.PushBack(gateModule)
+
+oscModule2, _ := farsounds.Registry.NewModule("osc", "osc2", map[string]interface{}{
+	"phase":     0.0,
+	"frequency": 57.0,
+	"amplitude": 100.0 / samplerate,
+	"table":     "sine",
+}, buflen, samplerate)
+
+oscModule2.Connect(0, patch, 0)
+*/
+
+// UnmarshalFromFile unmarshal a JSON object from file
+func UnmarshalFromFile(filePath string, obj interface{}) error {
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(obj)
+
+	return err
 }
 
 func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
+	setup()
 
-	samplerate := 44100.0 * 4
-	buflen := int32(1024)
+	sr := 44100.0
+	buflen := int32(512)
 
-	patch := farsounds.NewPatch(1, 1, buflen)
-	oscModule1 := components.NewOscModule(tables.SineTable, 0.0, 1000.0/samplerate, 1.0, buflen)
-	patch.InletModules[0].Connect(0, oscModule1, 0)
-	oscModule1.Connect(0, patch.OutletModules[0], 0)
-	patch.Modules.PushBack(oscModule1)
+	var settings map[string]interface{}
 
-	adsrModule := components.NewADSRModule(buflen)
-	adsrModule.SetAttackRate(0.1 * samplerate)
-	adsrModule.SetDecayRate(0.2 * samplerate)
-	adsrModule.SetReleaseRate(0.6 * samplerate)
-	adsrModule.SetSustainLevel(0.1)
-	adsrModule.Connect(0, oscModule1, 2)
-	patch.Modules.PushBack(adsrModule)
-
-	gateModule := components.NewSquareModule(0, 0.7/samplerate, 1, buflen)
-	gateModule.Connect(0, adsrModule, 0)
-	patch.Modules.PushBack(gateModule)
-
-	oscModule2 := components.NewOscModule(tables.SineTable, 0.0, 57.0/samplerate, 100.0/samplerate, buflen)
-	oscModule2.Connect(0, patch, 0)
-
-	writer, err := io.OpenSoundWriter("/users/almerlucke/Desktop/output", 1, int32(samplerate), true)
+	err := UnmarshalFromFile("patcher.json", &settings)
 	if err != nil {
-		fmt.Printf("normalize err: %v\n", err)
+		fmt.Printf("Opening json error: %v\n", err)
+		return
+	}
+
+	_patch, err := farsounds.Registry.NewModule("patch", "patch1", settings, buflen, sr)
+	if err != nil {
+		fmt.Printf("Create patch error: %v\n", err)
+		return
+	}
+
+	patch := _patch.(*farsounds.Patch)
+
+	writer, err := io.OpenSoundWriter("/users/almerlucke/Desktop/output", int32(1), int32(sr), true)
+	if err != nil {
+		fmt.Printf("Open writer error: %v\n", err)
 		return
 	}
 
 	numSeconds := 4.0
 	timestamp := int64(0)
-	numCycles := int64((numSeconds * samplerate) / float64(buflen))
+	numCycles := int64((numSeconds * sr) / float64(buflen))
 
 	for i := int64(0); i < numCycles; i++ {
 		patch.PrepareDSP()
-		oscModule2.PrepareDSP()
-		patch.DSP(buflen, timestamp, int32(samplerate))
+		patch.DSP(timestamp)
 		err = writer.WriteSamples(patch.Outlets[0].Buffer)
 		if err != nil {
 			writer.Close()
@@ -67,5 +124,4 @@ func main() {
 
 	writer.Close()
 	patch.Cleanup()
-	oscModule2.Cleanup()
 }

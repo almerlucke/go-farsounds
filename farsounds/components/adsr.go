@@ -164,18 +164,24 @@ type ADSRModule struct {
 }
 
 // NewADSRModule new ADSR module
-func NewADSRModule(buflen int32) *ADSRModule {
+func NewADSRModule(buflen int32, sr float64) *ADSRModule {
 	adsrModule := new(ADSRModule)
-	adsrModule.BaseModule = farsounds.NewBaseModule(1, 1, buflen)
+	adsrModule.BaseModule = farsounds.NewBaseModule(1, 1, buflen, sr)
 	adsrModule.Parent = adsrModule
 	adsrModule.ADSR = NewADSR()
 	return adsrModule
 }
 
+// func ADSRModuleFactory(settings interface{}, buflen int32, samplerate int32) {
+//
+// }
+
 // DSP process ADSR module
-func (module *ADSRModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (module *ADSRModule) DSP(timestamp int64) {
 	// First call base module dsp
-	module.BaseModule.DSP(buflen, timestamp, samplerate)
+	module.BaseModule.DSP(timestamp)
+
+	buflen := module.GetBufferLength()
 
 	var gateInput []float64
 
@@ -192,5 +198,34 @@ func (module *ADSRModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 		}
 
 		output[i] = module.Process()
+	}
+}
+
+// Message received
+func (module *ADSRModule) Message(message farsounds.Message) {
+	if valueMap, ok := message.(map[string]float64); ok {
+		if targetRatioA, ok := valueMap["targetRatioA"]; ok {
+			module.SetTargetRatioA(targetRatioA)
+		}
+
+		if targetRatioDR, ok := valueMap["targetRatioDR"]; ok {
+			module.SetTargetRatioDR(targetRatioDR)
+		}
+
+		if attackRate, ok := valueMap["attackRate"]; ok {
+			module.SetAttackRate(attackRate)
+		}
+
+		if decayRate, ok := valueMap["decayRate"]; ok {
+			module.SetDecayRate(decayRate)
+		}
+
+		if releaseRate, ok := valueMap["releaseRate"]; ok {
+			module.SetReleaseRate(releaseRate)
+		}
+
+		if sustainLevel, ok := valueMap["sustainLevel"]; ok {
+			module.SetSustainLevel(sustainLevel)
+		}
 	}
 }

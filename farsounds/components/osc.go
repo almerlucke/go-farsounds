@@ -1,7 +1,9 @@
 package components
 
-import "github.com/almerlucke/go-farsounds/farsounds"
-import "github.com/almerlucke/go-farsounds/farsounds/tables"
+import (
+	"github.com/almerlucke/go-farsounds/farsounds"
+	"github.com/almerlucke/go-farsounds/farsounds/tables"
+)
 
 // Osc uses a phasor to do a lookup
 type Osc struct {
@@ -40,18 +42,51 @@ type OscModule struct {
 }
 
 // NewOscModule creates a new osc module
-func NewOscModule(table tables.WaveTable, phase float64, inc float64, amp float64, buflen int32) *OscModule {
+func NewOscModule(table tables.WaveTable, phase float64, freq float64, amp float64, buflen int32, sr float64) *OscModule {
 	oscModule := new(OscModule)
-	oscModule.BaseModule = farsounds.NewBaseModule(3, 1, buflen)
+	oscModule.BaseModule = farsounds.NewBaseModule(3, 1, buflen, sr)
 	oscModule.Parent = oscModule
-	oscModule.Osc = NewOsc(table, phase, inc, amp)
+	oscModule.Osc = NewOsc(table, phase, freq/sr, amp)
 	return oscModule
 }
 
+// OscModuleFactory creates new osc modules
+func OscModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds.Module, error) {
+	table := tables.SineTable
+	phase := 0.0
+	freq := 100.0
+	amp := 1.0
+
+	if settingsMap, ok := settings.(map[string]interface{}); ok {
+		if f, ok := settingsMap["frequency"].(float64); ok {
+			freq = f
+		}
+
+		if p, ok := settingsMap["phase"].(float64); ok {
+			phase = p
+		}
+
+		if a, ok := settingsMap["amplitude"].(float64); ok {
+			amp = a
+		}
+
+		if tableName, ok := settingsMap["table"].(string); ok {
+			if t, err := farsounds.Registry.GetWaveTable(tableName); err == nil {
+				table = t
+			}
+		}
+	}
+
+	return NewOscModule(table, phase, freq, amp, buflen, sr), nil
+}
+
 // DSP fills output buffer for this osc module with samples
-func (module *OscModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (module *OscModule) DSP(timestamp int64) {
 	// First call base module dsp
-	module.BaseModule.DSP(buflen, timestamp, samplerate)
+	module.BaseModule.DSP(timestamp)
+
+	buflen := module.GetBufferLength()
+	sr := module.GetSampleRate()
 
 	var pmodInput []float64
 	var fmodInput []float64
@@ -80,7 +115,7 @@ func (module *OscModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 		}
 
 		if fmodInput != nil {
-			inc := fmodInput[i] / float64(samplerate)
+			inc := fmodInput[i] / sr
 			module.Inc = inc
 		}
 
@@ -90,5 +125,31 @@ func (module *OscModule) DSP(buflen int32, timestamp int64, samplerate int32) {
 		}
 
 		output[i] = module.Process(pmod)
+	}
+}
+
+// Message to module
+func (module *OscModule) Message(message farsounds.Message) {
+	sr := module.GetSampleRate()
+
+	if valueMap, ok := message.(map[string]interface{}); ok {
+		if frequency, ok := valueMap["frequency"].(float64); ok {
+			module.Inc = frequency / sr
+		}
+
+		if phase, ok := valueMap["phase"].(float64); ok {
+			module.Phase = phase
+		}
+
+		if amplitude, ok := valueMap["amplitude"].(float64); ok {
+			module.Amplitude = amplitude
+		}
+
+		if tableName, ok := valueMap["table"].(string); ok {
+			table, err := farsounds.Registry.GetWaveTable(tableName)
+			if err == nil {
+				module.Lookup.Table = table
+			}
+		}
 	}
 }

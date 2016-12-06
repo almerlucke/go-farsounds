@@ -6,56 +6,59 @@ import (
 	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
+// ModuleFactoryFunction is the module generator function for a factory
+type ModuleFactoryFunction func(settings interface{}, buflen int32, sr float64) (Module, error)
+
+type registry struct {
+	modules map[string]ModuleFactoryFunction
+	tables  map[string]tables.WaveTable
+}
+
+// Registry for modules and wave tables
+var Registry = &registry{
+	modules: make(map[string]ModuleFactoryFunction),
+	tables:  make(map[string]tables.WaveTable),
+}
+
 /*
 	Module registry
 */
 
-// ModuleFactoryFunction is the module generator function for a factory
-type ModuleFactoryFunction func(settings interface{}, buflen int32, samplerate int32) (Module, error)
-
-// ModuleRegistry global module registry
-var ModuleRegistry map[string]ModuleFactoryFunction
-
 // RegisterModuleFactory register a module factory function
-func RegisterModuleFactory(factoryName string, factoryFunction ModuleFactoryFunction) {
-	ModuleRegistry[factoryName] = factoryFunction
+func (registry *registry) RegisterModuleFactory(factoryName string, factoryFunction ModuleFactoryFunction) {
+	registry.modules[factoryName] = factoryFunction
 }
 
 // NewModule create a new module from a factory
-func NewModule(factoryName string, identifier string, settings interface{}, buflen int32, samplerate int32) (Module, error) {
-	factory := ModuleRegistry[factoryName]
-	if factory == nil {
-		return nil, fmt.Errorf("Unknown factory %s", factoryName)
+func (registry *registry) NewModule(factoryName string, identifier string, settings interface{}, buflen int32, sr float64) (Module, error) {
+	if factory, ok := registry.modules[factoryName]; ok {
+		module, err := factory(settings, buflen, sr)
+		if err != nil {
+			return nil, err
+		}
+
+		module.SetIdentifier(identifier)
+
+		return module, nil
 	}
 
-	module, err := factory(settings, buflen, samplerate)
-	if err != nil {
-		return nil, err
-	}
-
-	module.SetIdentifier(identifier)
-
-	return module, nil
+	return nil, fmt.Errorf("Unknown factory %s", factoryName)
 }
 
 /*
 	Wavetable registry
 */
 
-// WaveTableRegistry global wave table registry
-var WaveTableRegistry map[string]tables.WaveTable
-
 // RegisterWaveTable register a wave table
-func RegisterWaveTable(waveTableName string, waveTable tables.WaveTable) {
-	WaveTableRegistry[waveTableName] = waveTable
+func (registry *registry) RegisterWaveTable(waveTableName string, waveTable tables.WaveTable) {
+	registry.tables[waveTableName] = waveTable
 }
 
 // GetWaveTable get wave table from registry by name
-func GetWaveTable(waveTableName string) (tables.WaveTable, error) {
-	waveTable := WaveTableRegistry[waveTableName]
-	if waveTable == nil {
-		return nil, fmt.Errorf("Unknown wavetable %s", waveTableName)
+func (registry *registry) GetWaveTable(waveTableName string) (tables.WaveTable, error) {
+	if waveTable, ok := registry.tables[waveTableName]; ok {
+		return waveTable, nil
 	}
 
-	return waveTable, nil
+	return nil, fmt.Errorf("Unknown wavetable %s", waveTableName)
 }

@@ -31,7 +31,7 @@ type Module interface {
 	PrepareDSP()
 
 	// DSP generate samples
-	DSP(buflen int32, timestamp int64, samplerate int32)
+	DSP(timestamp int64)
 
 	// Perform Cleanup to release any resources
 	Cleanup()
@@ -50,6 +50,12 @@ type Module interface {
 
 	// Check if connected to another module
 	IsConnected(out int, otherModule Module, in int) bool
+
+	// Get sample rate
+	GetSampleRate() float64
+
+	// Get buffer length
+	GetBufferLength() int32
 
 	// Get unique identifier for this module, will be used for message addressing
 	// and maybe other future purposes
@@ -87,14 +93,24 @@ type BaseModule struct {
 	// Identifier to identify this module, will be used for message addressing
 	// and maybe other future purposes
 	Identifier string
+
+	// SampleRate for this module
+	SampleRate float64
+
+	// BufferLength for this module
+	BufferLength int32
 }
 
 // NewBaseModule creates a new basic module
-func NewBaseModule(numInlets int, numOutlets int, buflen int32) *BaseModule {
+func NewBaseModule(numInlets int, numOutlets int, buflen int32, sr float64) *BaseModule {
 	module := new(BaseModule)
 
 	// Set self as parent
 	module.Parent = module
+
+	// Set sample rate and buffer length
+	module.SampleRate = sr
+	module.BufferLength = buflen
 
 	// Create inlet and outlet slices
 	module.Inlets = make([]*Inlet, numInlets)
@@ -125,7 +141,7 @@ func (baseModule *BaseModule) PrepareDSP() {
 }
 
 // DSP prepares inlets, calls DSP on connected modules
-func (baseModule *BaseModule) DSP(buflen int32, timestamp int64, samplerate int32) {
+func (baseModule *BaseModule) DSP(timestamp int64) {
 	// Check if we already processed for this DSP cycle, if so return
 	if baseModule.Processed {
 		return
@@ -149,7 +165,7 @@ func (baseModule *BaseModule) DSP(buflen int32, timestamp int64, samplerate int3
 			conn := e.Value.(*Connection)
 
 			// Call DSP of connected module
-			conn.To.DSP(buflen, timestamp, samplerate)
+			conn.To.DSP(timestamp)
 
 			// Get output buffer for this connection
 			outBuffer := conn.To.GetOutlets()[conn.Index].Buffer
@@ -265,6 +281,16 @@ func (baseModule *BaseModule) Disconnect(out int, otherModule Module, in int) {
 			break
 		}
 	}
+}
+
+// GetBufferLength for this module
+func (baseModule *BaseModule) GetBufferLength() int32 {
+	return baseModule.BufferLength
+}
+
+// GetSampleRate for this module
+func (baseModule *BaseModule) GetSampleRate() float64 {
+	return baseModule.SampleRate
 }
 
 // GetIdentifier for this module
