@@ -1,25 +1,36 @@
 {
-    "numInlets": 0,
-    "numOutlets": 1,
-    "modules": {
-        "osc1": {
-            "type": "osc",
-            "settings": {
-                "table": "sine",
-                "frequency": 10,
-                "amplitude": 0.00222
+    "sampleRate": 44100.0,
+    "bufferLength": 512,
+    "patch": {
+        "numInlets": 0,
+        "numOutlets": 1,
+        "modules": {
+            "osc1": {
+                "type": "osc",
+                "settings": {
+                    "table": "sine",
+                    "frequency": 10,
+                    "amplitude": 0.00222
+                }
+            },
+            "osc2": {
+                "type": "osc",
+                "settings": {
+                    "table": "sine",
+                    "frequency": 1000
+                }
             }
         },
-        "osc2": {
-            "type": "osc",
-            "settings": {
-                "table": "sine",
-                "frequency": 1000
-            }
-        }
-    },
-    "connections": [
-        { "from": "osc1", "outlet": 0, "to": "osc2", "inlet": 0 },
-        { "from": "osc2", "outlet": 0, "to": "__outlet1", "inlet": 0}
-    ]
+        "connections": [{
+            "from": "osc1",
+            "outlet": 0,
+            "to": "osc2",
+            "inlet": 0
+        }, {
+            "from": "osc2",
+            "outlet": 0,
+            "to": "__outlet1",
+            "inlet": 0
+        }]
+    }
 }

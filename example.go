@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/almerlucke/go-farsounds/farsounds"
@@ -17,8 +15,10 @@ func setup() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	farsounds.Registry.RegisterWaveTable("sine", tables.SineTable)
+
 	farsounds.Registry.RegisterModuleFactory("osc", components.OscModuleFactory)
 	farsounds.Registry.RegisterModuleFactory("square", components.SquareModuleFactory)
+	farsounds.Registry.RegisterModuleFactory("adsr", components.ADSRModuleFactory)
 	farsounds.Registry.RegisterModuleFactory("patch", farsounds.PatchFactory)
 }
 
@@ -62,45 +62,20 @@ oscModule2, _ := farsounds.Registry.NewModule("osc", "osc2", map[string]interfac
 oscModule2.Connect(0, patch, 0)
 */
 
-// UnmarshalFromFile unmarshal a JSON object from file
-func UnmarshalFromFile(filePath string, obj interface{}) error {
-	file, err := os.Open(filePath)
-
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(obj)
-
-	return err
-}
-
 func main() {
 	setup()
 
-	sr := 44100.0
-	buflen := int32(512)
-
-	var settings map[string]interface{}
-
-	err := UnmarshalFromFile("patcher.json", &settings)
+	patch, err := farsounds.LoadMainScript("patcher.json")
 	if err != nil {
-		fmt.Printf("Opening json error: %v\n", err)
+		fmt.Printf("Error opening main script: %v\n", err)
 		return
 	}
 
-	_patch, err := farsounds.Registry.NewModule("patch", "patch1", settings, buflen, sr)
-	if err != nil {
-		fmt.Printf("Create patch error: %v\n", err)
-		return
-	}
+	sr := patch.GetSampleRate()
+	buflen := patch.GetBufferLength()
+	numChannels := len(patch.GetOutlets())
 
-	patch := _patch.(*farsounds.Patch)
-
-	writer, err := io.OpenSoundWriter("/users/almerlucke/Desktop/output", int32(1), int32(sr), true)
+	writer, err := io.OpenSoundWriter("/users/almerlucke/Desktop/output", int32(numChannels), int32(sr), true)
 	if err != nil {
 		fmt.Printf("Open writer error: %v\n", err)
 		return

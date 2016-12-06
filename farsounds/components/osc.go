@@ -57,27 +57,11 @@ func OscModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds
 	freq := 100.0
 	amp := 1.0
 
-	if settingsMap, ok := settings.(map[string]interface{}); ok {
-		if f, ok := settingsMap["frequency"].(float64); ok {
-			freq = f
-		}
+	module := NewOscModule(table, phase, freq, amp, buflen, sr)
 
-		if p, ok := settingsMap["phase"].(float64); ok {
-			phase = p
-		}
+	module.Message(settings)
 
-		if a, ok := settingsMap["amplitude"].(float64); ok {
-			amp = a
-		}
-
-		if tableName, ok := settingsMap["table"].(string); ok {
-			if t, err := farsounds.Registry.GetWaveTable(tableName); err == nil {
-				table = t
-			}
-		}
-	}
-
-	return NewOscModule(table, phase, freq, amp, buflen, sr), nil
+	return module, nil
 }
 
 // DSP fills output buffer for this osc module with samples

@@ -57,21 +57,11 @@ func SquareModuleFactory(settings interface{}, buflen int32, sr float64) (farsou
 	freq := 100.0
 	amp := 1.0
 
-	if settingsMap, ok := settings.(map[string]interface{}); ok {
-		if f, ok := settingsMap["frequency"].(float64); ok {
-			freq = f
-		}
+	module := NewSquareModule(phase, freq, amp, buflen, sr)
 
-		if p, ok := settingsMap["phase"].(float64); ok {
-			phase = p
-		}
+	module.Message(settings)
 
-		if a, ok := settingsMap["amplitude"].(float64); ok {
-			amp = a
-		}
-	}
-
-	return NewSquareModule(phase, freq, amp, buflen, sr), nil
+	return module, nil
 }
 
 // DSP fills output buffer for this square module with samples
@@ -119,5 +109,24 @@ func (module *SquareModule) DSP(timestamp int64) {
 		}
 
 		output[i] = module.Process(pmod)
+	}
+}
+
+// Message to module
+func (module *SquareModule) Message(message farsounds.Message) {
+	sr := module.GetSampleRate()
+
+	if valueMap, ok := message.(map[string]interface{}); ok {
+		if frequency, ok := valueMap["frequency"].(float64); ok {
+			module.Inc = frequency / sr
+		}
+
+		if phase, ok := valueMap["phase"].(float64); ok {
+			module.Phase = phase
+		}
+
+		if amplitude, ok := valueMap["amplitude"].(float64); ok {
+			module.Amplitude = amplitude
+		}
 	}
 }

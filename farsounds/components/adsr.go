@@ -172,9 +172,14 @@ func NewADSRModule(buflen int32, sr float64) *ADSRModule {
 	return adsrModule
 }
 
-// func ADSRModuleFactory(settings interface{}, buflen int32, samplerate int32) {
-//
-// }
+// ADSRModuleFactory creates ADSR modules
+func ADSRModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds.Module, error) {
+	module := NewADSRModule(buflen, sr)
+
+	module.Message(settings)
+
+	return module, nil
+}
 
 // DSP process ADSR module
 func (module *ADSRModule) DSP(timestamp int64) {
@@ -203,6 +208,8 @@ func (module *ADSRModule) DSP(timestamp int64) {
 
 // Message received
 func (module *ADSRModule) Message(message farsounds.Message) {
+	sr := module.GetSampleRate()
+
 	if valueMap, ok := message.(map[string]float64); ok {
 		if targetRatioA, ok := valueMap["targetRatioA"]; ok {
 			module.SetTargetRatioA(targetRatioA)
@@ -213,15 +220,15 @@ func (module *ADSRModule) Message(message farsounds.Message) {
 		}
 
 		if attackRate, ok := valueMap["attackRate"]; ok {
-			module.SetAttackRate(attackRate)
+			module.SetAttackRate(attackRate / sr)
 		}
 
 		if decayRate, ok := valueMap["decayRate"]; ok {
-			module.SetDecayRate(decayRate)
+			module.SetDecayRate(decayRate / sr)
 		}
 
 		if releaseRate, ok := valueMap["releaseRate"]; ok {
-			module.SetReleaseRate(releaseRate)
+			module.SetReleaseRate(releaseRate / sr)
 		}
 
 		if sustainLevel, ok := valueMap["sustainLevel"]; ok {
