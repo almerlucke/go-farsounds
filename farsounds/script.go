@@ -1,12 +1,12 @@
 package farsounds
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 
 	"github.com/almerlucke/go-farsounds/farsounds/io"
-	"github.com/almerlucke/go-farsounds/farsounds/utils/jsonx"
 )
 
 // ScriptMainDescriptor describes main script content
@@ -14,6 +14,22 @@ type ScriptMainDescriptor struct {
 	SampleRate    float64                `json:"sampleRate"`
 	BufferLength  int32                  `json:"bufferLength"`
 	PatchSettings map[string]interface{} `json:"patch"`
+}
+
+// UnmarshalFromFile unmarshal a JSON object from file
+func UnmarshalFromFile(filePath string, obj interface{}) error {
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(obj)
+
+	return err
 }
 
 // EvalInFileDirectory evaluate function in directory of file, change working directory
@@ -59,7 +75,7 @@ func EvalScript(filePath string, eval func(obj interface{}) (interface{}, error)
 	obj, err := EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
 		var script interface{}
 
-		err := jsonx.UnmarshalFromFile(basePath, &script)
+		err := UnmarshalFromFile(basePath, &script)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +95,7 @@ func LoadMainScript(filePath string) (*Patch, error) {
 	_patch, err := EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
 		mainDescriptor := ScriptMainDescriptor{}
 
-		err := jsonx.UnmarshalFromFile(basePath, &mainDescriptor)
+		err := UnmarshalFromFile(basePath, &mainDescriptor)
 		if err != nil {
 			return nil, err
 		}
