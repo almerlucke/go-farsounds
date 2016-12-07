@@ -2,6 +2,15 @@
     "numInlets": 0,
     "numOutlets": 1,
     "modules": {
+        "adsr1": {
+            "type": "adsr",
+            "settings": {
+                "attackRate": 0.1,
+                "decayRate": 0.1,
+                "releaseRate": 0.3,
+                "sustainLevel": 0.3
+            }
+        },
         "osc1": {
             "type": "osc",
             "settings": {
@@ -15,6 +24,11 @@
         }
     },
     "connections": [{
+        "from": "adsr1",
+        "outlet": 0,
+        "to": "osc2",
+        "inlet": 2
+    }, {
         "from": "osc1",
         "outlet": 0,
         "to": "osc2",

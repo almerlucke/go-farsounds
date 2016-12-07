@@ -2,7 +2,6 @@ package farsounds
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -45,8 +44,6 @@ func EvalInFileDirectory(filePath string, eval func(basePath string) (interface{
 		if err != nil {
 			return nil, err
 		}
-
-		fmt.Printf("changed working directory %v\n", newWorkingDirectory)
 
 		// Restore old working directory
 		defer os.Chdir(oldWorkingDirectory)

@@ -4,8 +4,24 @@
         "patch1/osc2": {
             "frequency": 100.0
         },
+        "patch1/adsr1": {
+            "gate": 1.0
+        },
+        "adsr1": {
+            "gate": 1.0
+        },
         "osc2": {
             "frequency": 110.0
+        }
+    }
+}, {
+    "on": 0.4,
+    "send": {
+        "patch1/adsr1": {
+            "gate": 0.0
+        },
+        "adsr1": {
+            "gate": 0.0
         }
     }
 }, {
@@ -14,8 +30,24 @@
         "patch1/osc2": {
             "frequency": 200.0
         },
+        "patch1/adsr1": {
+            "gate": 1.0
+        },
+        "adsr1": {
+            "gate": 1.0
+        },
         "osc2": {
             "frequency": 201.0
+        }
+    }
+}, {
+    "on": 1.4,
+    "send": {
+        "patch1/adsr1": {
+            "gate": 0.0
+        },
+        "adsr1": {
+            "gate": 0.0
         }
     }
 }, {
@@ -24,8 +56,24 @@
         "patch1/osc2": {
             "frequency": 400.0
         },
+        "patch1/adsr1": {
+            "gate": 1.0
+        },
+        "adsr1": {
+            "gate": 1.0
+        },
         "osc2": {
             "frequency": 802.0
+        }
+    }
+}, {
+    "on": 2.4,
+    "send": {
+        "patch1/adsr1": {
+            "gate": 0.0
+        },
+        "adsr1": {
+            "gate": 0.0
         }
     }
 }, {
@@ -34,8 +82,24 @@
         "patch1/osc2": {
             "frequency": 800.0
         },
+        "patch1/adsr1": {
+            "gate": 1.0
+        },
+        "adsr1": {
+            "gate": 1.0
+        },
         "osc2": {
             "frequency": 1201.0
+        }
+    }
+}, {
+    "on": 3.4,
+    "send": {
+        "patch1/adsr1": {
+            "gate": 0.0
+        },
+        "adsr1": {
+            "gate": 0.0
         }
     }
 }]

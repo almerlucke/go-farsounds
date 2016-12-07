@@ -210,28 +210,32 @@ func (module *ADSRModule) DSP(timestamp int64) {
 func (module *ADSRModule) Message(message farsounds.Message) {
 	sr := module.GetSampleRate()
 
-	if valueMap, ok := message.(map[string]float64); ok {
-		if targetRatioA, ok := valueMap["targetRatioA"]; ok {
+	if valueMap, ok := message.(map[string]interface{}); ok {
+		if gate, ok := valueMap["gate"].(float64); ok {
+			module.Gate(gate)
+		}
+
+		if targetRatioA, ok := valueMap["targetRatioA"].(float64); ok {
 			module.SetTargetRatioA(targetRatioA)
 		}
 
-		if targetRatioDR, ok := valueMap["targetRatioDR"]; ok {
+		if targetRatioDR, ok := valueMap["targetRatioDR"].(float64); ok {
 			module.SetTargetRatioDR(targetRatioDR)
 		}
 
-		if attackRate, ok := valueMap["attackRate"]; ok {
-			module.SetAttackRate(attackRate / sr)
+		if attackRate, ok := valueMap["attackRate"].(float64); ok {
+			module.SetAttackRate(attackRate * sr)
 		}
 
-		if decayRate, ok := valueMap["decayRate"]; ok {
-			module.SetDecayRate(decayRate / sr)
+		if decayRate, ok := valueMap["decayRate"].(float64); ok {
+			module.SetDecayRate(decayRate * sr)
 		}
 
-		if releaseRate, ok := valueMap["releaseRate"]; ok {
-			module.SetReleaseRate(releaseRate / sr)
+		if releaseRate, ok := valueMap["releaseRate"].(float64); ok {
+			module.SetReleaseRate(releaseRate * sr)
 		}
 
-		if sustainLevel, ok := valueMap["sustainLevel"]; ok {
+		if sustainLevel, ok := valueMap["sustainLevel"].(float64); ok {
 			module.SetSustainLevel(sustainLevel)
 		}
 	}
