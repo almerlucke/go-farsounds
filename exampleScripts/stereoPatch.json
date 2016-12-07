@@ -9,16 +9,12 @@
                 "type": "osc",
                 "settings": {
                     "table": "sine",
-                    "frequency": 10,
-                    "amplitude": 0.00222
+                    "frequency": 2.3,
+                    "amplitude": 0.00122
                 }
             },
             "osc2": {
-                "type": "osc",
-                "settings": {
-                    "table": "sine",
-                    "frequency": 850
-                }
+                "type": "osc"
             },
             "patch1": {
                 "type": "patch",
@@ -31,20 +27,18 @@
             "to": "osc2",
             "inlet": 0
         }, {
-            "from": "osc3",
-            "outlet": 0,
-            "to": "osc4",
-            "inlet": 0
-        }, {
             "from": "osc2",
             "outlet": 0,
             "to": "__outlet1",
             "inlet": 0
         }, {
-            "from": "osc4",
+            "from": "patch1",
             "outlet": 0,
             "to": "__outlet2",
             "inlet": 0
-        }]
+        }],
+        "scores": [
+            "score.json"
+        ]
     }
 }

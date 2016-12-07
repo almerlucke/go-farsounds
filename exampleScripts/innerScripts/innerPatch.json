@@ -4,16 +4,25 @@
     "modules": {
         "osc1": {
             "type": "osc",
-            "settings": { "table": "sine", "frequency": 8.5, "amplitude": 0.00222}
+            "settings": {
+                "table": "sine",
+                "frequency": 3.5,
+                "amplitude": 0.00122
+            }
         },
         "osc2": {
-            "type": "osc",
-            "settings": { "table": "sine", "frequency": 841 }
+            "type": "osc"
         }
     },
     "connections": [{
-        "from": "osc1", "outlet": 0, "to": "osc2", "inlet": 0
+        "from": "osc1",
+        "outlet": 0,
+        "to": "osc2",
+        "inlet": 0
     }, {
-        "from": "osc2", "outlet": 0, "to": "__outlet1", "inlet": 0
+        "from": "osc2",
+        "outlet": 0,
+        "to": "__outlet1",
+        "inlet": 0
     }]
 }

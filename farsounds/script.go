@@ -2,9 +2,11 @@ package farsounds
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/almerlucke/go-farsounds/farsounds/io"
-	"github.com/almerlucke/go-farsounds/farsounds/utils/filex"
 	"github.com/almerlucke/go-farsounds/farsounds/utils/jsonx"
 )
 
@@ -15,9 +17,69 @@ type ScriptMainDescriptor struct {
 	PatchSettings map[string]interface{} `json:"patch"`
 }
 
+// EvalInFileDirectory evaluate function in directory of file, change working directory
+// if needed, and afterwards change it back to previous working directory
+func EvalInFileDirectory(filePath string, eval func(basePath string) (interface{}, error)) (interface{}, error) {
+	// Store current working directory
+	oldWorkingDirectory, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get absolute path of file
+	absFilePath, err := filepath.Abs(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get directory file is located in
+	newWorkingDirectory := filepath.Dir(absFilePath)
+
+	// Strip file path to base
+	basePath := filepath.Base(filePath)
+
+	// If new directory is not the same as old directory
+	// change working directory
+	if newWorkingDirectory != oldWorkingDirectory {
+		err = os.Chdir(newWorkingDirectory)
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("changed working directory %v\n", newWorkingDirectory)
+
+		// Restore old working directory
+		defer os.Chdir(oldWorkingDirectory)
+	}
+
+	// Evaluate function with base path, old working directory is restored
+	// after evaluation
+	return eval(basePath)
+}
+
+// EvalScript loads json from script and calls eval function with unmarshalled json
+func EvalScript(filePath string, eval func(obj interface{}) (interface{}, error)) (interface{}, error) {
+	obj, err := EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
+		var script interface{}
+
+		err := jsonx.UnmarshalFromFile(basePath, &script)
+		if err != nil {
+			return nil, err
+		}
+
+		return script, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return eval(obj)
+}
+
 // LoadMainScript containing samplerate, bufferlength and main patch
 func LoadMainScript(filePath string) (*Patch, error) {
-	_patch, err := filex.EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
+	_patch, err := EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
 		mainDescriptor := ScriptMainDescriptor{}
 
 		err := jsonx.UnmarshalFromFile(basePath, &mainDescriptor)

@@ -1,6 +1,8 @@
 package components
 
 import (
+	"fmt"
+
 	"github.com/almerlucke/go-farsounds/farsounds"
 	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
@@ -117,6 +119,8 @@ func (module *OscModule) Message(message farsounds.Message) {
 	sr := module.GetSampleRate()
 
 	if valueMap, ok := message.(map[string]interface{}); ok {
+		fmt.Printf("message received %v\n", valueMap)
+
 		if frequency, ok := valueMap["frequency"].(float64); ok {
 			module.Inc = frequency / sr
 		}

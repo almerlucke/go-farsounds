@@ -4,9 +4,6 @@ import (
 	"container/list"
 	"fmt"
 
-	"github.com/almerlucke/go-farsounds/farsounds/utils/filex"
-	"github.com/almerlucke/go-farsounds/farsounds/utils/jsonx"
-
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -34,6 +31,7 @@ type ScriptPatchSettingsDescriptor struct {
 	NumOutlets  int
 	Modules     map[string]interface{}
 	Connections []interface{}
+	Scores      []string
 }
 
 /*
@@ -121,6 +119,9 @@ type Patch struct {
 
 	// List of modules in this patch
 	Modules *list.List
+
+	// List of score players in this patch
+	ScorePlayers *list.List
 }
 
 // NewPatch creates a new patch module
@@ -135,6 +136,9 @@ func NewPatch(numInlets int, numOutlets int, buflen int32, sr float64) *Patch {
 
 	// Create new modules list
 	patch.Modules = list.New()
+
+	// Create new score players list
+	patch.ScorePlayers = list.New()
 
 	// Create inlet modules
 	patch.InletModules = make([]*InletModule, numInlets)
@@ -160,31 +164,24 @@ func NewPatch(numInlets int, numOutlets int, buflen int32, sr float64) *Patch {
 	return patch
 }
 
-// LoadPatchScript loads a patch settings from script
-func LoadPatchScript(filePath string) (interface{}, error) {
-	return filex.EvalInFileDirectory(filePath, func(basePath string) (interface{}, error) {
-		settings := map[string]interface{}{}
-
-		err := jsonx.UnmarshalFromFile(basePath, &settings)
-		if err != nil {
-			return nil, err
-		}
-
-		return settings, nil
-	})
-}
-
 // PatchFactory creates patches from settings
 func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error) {
 	var err error
 
-	// If settings is a string, it represents a file path
-	// for the settings script
+	// If settings is a string, it represents a file path for the settings script.
+	// Eval the settings script and return loaded patch
 	if filePath, ok := settings.(string); ok {
-		settings, err = LoadPatchScript(filePath)
+		var _module interface{}
+
+		_module, err = EvalScript(filePath, func(patchSettings interface{}) (interface{}, error) {
+			return PatchFactory(patchSettings, buflen, sr)
+		})
+
 		if err != nil {
 			return nil, err
 		}
+
+		return _module.(Module), nil
 	}
 
 	// Create patch descriptor from raw map
@@ -255,6 +252,17 @@ func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error
 		from.Connect(cdesc.Outlet, to, cdesc.Inlet)
 	}
 
+	// Create scores
+	for _, scoreFilePath := range pdesc.Scores {
+		score, err := LoadScore(scoreFilePath)
+		if err != nil {
+			return nil, err
+		}
+
+		player := NewScorePlayer(score)
+		patch.ScorePlayers.PushBack(player)
+	}
+
 	return patch, nil
 }
 
@@ -267,6 +275,13 @@ func (patch *Patch) DSP(timestamp int64) {
 	for e := patch.Modules.Front(); e != nil; e = e.Next() {
 		module := e.Value.(Module)
 		module.PrepareDSP()
+	}
+
+	// Process all score players first
+	time := float64(timestamp) / patch.GetSampleRate()
+	for e := patch.ScorePlayers.Front(); e != nil; e = e.Next() {
+		player := e.Value.(*ScorePlayer)
+		player.Play(time, patch)
 	}
 
 	// Loop through outlet modules and perform DSP, pulling all internally

@@ -1,0 +1,41 @@
+[{
+    "on": 0.0,
+    "send": {
+        "patch1/osc2": {
+            "frequency": 100.0
+        },
+        "osc2": {
+            "frequency": 110.0
+        }
+    }
+}, {
+    "on": 1.0,
+    "send": {
+        "patch1/osc2": {
+            "frequency": 200.0
+        },
+        "osc2": {
+            "frequency": 201.0
+        }
+    }
+}, {
+    "on": 2.0,
+    "send": {
+        "patch1/osc2": {
+            "frequency": 400.0
+        },
+        "osc2": {
+            "frequency": 802.0
+        }
+    }
+}, {
+    "on": 3.0,
+    "send": {
+        "patch1/osc2": {
+            "frequency": 800.0
+        },
+        "osc2": {
+            "frequency": 1201.0
+        }
+    }
+}]
