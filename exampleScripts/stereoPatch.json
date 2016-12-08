@@ -28,7 +28,7 @@
             "allpass1": {
                 "type": "allpass",
                 "settings": {
-                    "delay": 0.5,
+                    "delay": 0.75,
                     "feedback": 0.2
                 }
             },

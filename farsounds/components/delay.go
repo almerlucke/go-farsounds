@@ -142,9 +142,9 @@ func (module *DelayModule) DSP(timestamp int64) {
 			readLocation = readInput[i] * sr
 		}
 
-		module.Delay.Write(inSample)
-
 		output[i] = module.Delay.Read(readLocation)
+
+		module.Delay.Write(inSample)
 	}
 }
 
