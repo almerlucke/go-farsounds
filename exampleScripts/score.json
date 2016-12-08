@@ -1,22 +1,16 @@
 [{
     "on": 0.0,
-    "send": {
-        "patch1/osc2": {
-            "frequency": 100.0
-        },
-        "patch1/adsr1": {
-            "gate": 1.0
-        },
-        "adsr1": {
-            "gate": 1.0
-        },
-        "osc2": {
-            "frequency": 110.0
-        }
+    "action": "send",
+    "payload": {
+        "patch1/osc2": { "frequency": 100.0 },
+        "patch1/adsr1": { "gate": 1.0 },
+        "adsr1": { "gate": 1.0 },
+        "osc2": { "frequency": 110.0 }
     }
 }, {
-    "on": 0.4,
-    "send": {
+    "on": 0.3,
+    "action": "send",
+    "payload": {
         "patch1/adsr1": {
             "gate": 0.0
         },
@@ -25,8 +19,9 @@
         }
     }
 }, {
-    "on": 1.0,
-    "send": {
+    "on": 0.5,
+    "action": "send",
+    "payload": {
         "patch1/osc2": {
             "frequency": 200.0
         },
@@ -41,8 +36,9 @@
         }
     }
 }, {
-    "on": 1.4,
-    "send": {
+    "on": 0.8,
+    "action": "send",
+    "payload": {
         "patch1/adsr1": {
             "gate": 0.0
         },
@@ -51,8 +47,9 @@
         }
     }
 }, {
-    "on": 2.0,
-    "send": {
+    "on": 1.0,
+    "action": "send",
+    "payload": {
         "patch1/osc2": {
             "frequency": 400.0
         },
@@ -67,8 +64,9 @@
         }
     }
 }, {
-    "on": 2.4,
-    "send": {
+    "on": 1.3,
+    "action": "send",
+    "payload": {
         "patch1/adsr1": {
             "gate": 0.0
         },
@@ -77,8 +75,9 @@
         }
     }
 }, {
-    "on": 3.0,
-    "send": {
+    "on": 1.5,
+    "action": "send",
+    "payload": {
         "patch1/osc2": {
             "frequency": 800.0
         },
@@ -93,8 +92,9 @@
         }
     }
 }, {
-    "on": 3.4,
-    "send": {
+    "on": 1.8,
+    "action": "send",
+    "payload": {
         "patch1/adsr1": {
             "gate": 0.0
         },
@@ -102,4 +102,7 @@
             "gate": 0.0
         }
     }
+}, {
+    "on": 2.0,
+    "action": "reset"
 }]

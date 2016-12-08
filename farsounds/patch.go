@@ -278,10 +278,9 @@ func (patch *Patch) DSP(timestamp int64) {
 	}
 
 	// Process all score players first
-	time := float64(timestamp) / patch.GetSampleRate()
 	for e := patch.ScorePlayers.Front(); e != nil; e = e.Next() {
 		player := e.Value.(*ScorePlayer)
-		player.Play(time, patch)
+		player.Play(patch)
 	}
 
 	// Loop through outlet modules and perform DSP, pulling all internally

@@ -16,7 +16,7 @@
             "settings": {
                 "table": "sine",
                 "frequency": 3.5,
-                "amplitude": 0.00122
+                "amplitude": 0.000122
             }
         },
         "osc2": {

@@ -8,9 +8,9 @@
             "adsr1": {
                 "type": "adsr",
                 "settings": {
-                    "attackRate": 0.1,
-                    "decayRate": 0.1,
-                    "releaseRate": 0.3,
+                    "attackRate": 0.05,
+                    "decayRate": 0.05,
+                    "releaseRate": 0.1,
                     "sustainLevel": 0.3
                 }
             },
@@ -19,7 +19,7 @@
                 "settings": {
                     "table": "sine",
                     "frequency": 2.3,
-                    "amplitude": 0.00122
+                    "amplitude": 0.000122
                 }
             },
             "osc2": {
