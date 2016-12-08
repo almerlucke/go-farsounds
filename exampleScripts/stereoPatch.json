@@ -25,6 +25,13 @@
             "osc2": {
                 "type": "osc"
             },
+            "allpass1": {
+                "type": "allpass",
+                "settings": {
+                    "delay": 0.5,
+                    "feedback": 0.2
+                }
+            },
             "patch1": {
                 "type": "patch",
                 "settings": "innerScripts/innerPatch.json"
@@ -42,6 +49,11 @@
             "inlet": 0
         }, {
             "from": "osc2",
+            "outlet": 0,
+            "to": "allpass1",
+            "inlet": 0
+        }, {
+            "from": "allpass1",
             "outlet": 0,
             "to": "__outlet1",
             "inlet": 0

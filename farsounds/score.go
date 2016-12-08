@@ -43,7 +43,7 @@ func (action *ScoreResetAction) Action(scorePlayer *ScorePlayer, module Module, 
 // ScoreDelivery score message for addres
 type ScoreDelivery struct {
 	Message Message
-	Address *Address
+	Address string
 }
 
 // ScoreSendAction send deliveries
@@ -65,7 +65,7 @@ func NewScoreSendAction(payload interface{}) *ScoreSendAction {
 		// Add deliveries
 		for address, message := range deliveryMap {
 			delivery := ScoreDelivery{}
-			delivery.Address = NewAddress(address)
+			delivery.Address = address
 			delivery.Message = message
 			deliveries[deliveryIndex] = &delivery
 			deliveryIndex++
@@ -80,7 +80,7 @@ func NewScoreSendAction(payload interface{}) *ScoreSendAction {
 // Action send
 func (action *ScoreSendAction) Action(player *ScorePlayer, module Module, time *float64) {
 	for _, delivery := range action.Deliveries {
-		module.SendMessage(delivery.Address, delivery.Message)
+		module.SendMessage(NewAddress(delivery.Address), delivery.Message)
 	}
 }
 
