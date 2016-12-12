@@ -266,16 +266,22 @@ func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error
 	return patch, nil
 }
 
-// DSP processor for patch, perform DSP on internal modules
-func (patch *Patch) DSP(timestamp int64) {
-	// First call base module dsp
-	patch.BaseModule.DSP(timestamp)
+// PrepareDSP prepare for dsp
+func (patch *Patch) PrepareDSP() {
+	// First call base module prepare dsp
+	patch.BaseModule.PrepareDSP()
 
 	// Prepare all modules first
 	for e := patch.Modules.Front(); e != nil; e = e.Next() {
 		module := e.Value.(Module)
 		module.PrepareDSP()
 	}
+}
+
+// DSP processor for patch, perform DSP on internal modules
+func (patch *Patch) DSP(timestamp int64) {
+	// First call base module dsp
+	patch.BaseModule.DSP(timestamp)
 
 	// Process all score players first
 	for e := patch.ScorePlayers.Front(); e != nil; e = e.Next() {

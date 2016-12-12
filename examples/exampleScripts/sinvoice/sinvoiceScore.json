@@ -1,0 +1,78 @@
+[{
+    "on": 0.0,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 1.0,
+            "settings": {
+                "frequency": 400.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 0.25,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 1.0,
+            "settings": {
+                "frequency": 800.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 1.0,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 3.0,
+            "settings": {
+                "frequency": 1200.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 2.0,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 1.0,
+            "settings": {
+                "frequency": 400.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 2.4,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 1.0,
+            "settings": {
+                "frequency": 600.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 3.4,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 4.0,
+            "settings": {
+                "frequency": 800.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 4.4,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 3.0,
+            "settings": {
+                "frequency": 1000.0, "amplitude": 1.0
+            }
+        }
+    }
+}]

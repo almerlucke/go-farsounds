@@ -6,18 +6,43 @@ import (
 	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
-// ModuleFactoryFunction is the module generator function for a factory
-type ModuleFactoryFunction func(settings interface{}, buflen int32, sr float64) (Module, error)
+// ModuleFactory is the module generator function for a factory
+type ModuleFactory func(settings interface{}, buflen int32, sr float64) (Module, error)
+
+// PolyVoiceFactoryEntry entry for the registry
+type PolyVoiceFactoryEntry struct {
+	Factory    PolyVoiceFactory
+	NumOutlets int
+}
 
 type registry struct {
-	modules map[string]ModuleFactoryFunction
+	modules map[string]ModuleFactory
 	tables  map[string]tables.WaveTable
+	voices  map[string]*PolyVoiceFactoryEntry
 }
 
 // Registry for modules and wave tables
 var Registry = &registry{
-	modules: make(map[string]ModuleFactoryFunction),
+	modules: make(map[string]ModuleFactory),
 	tables:  make(map[string]tables.WaveTable),
+	voices:  make(map[string]*PolyVoiceFactoryEntry),
+}
+
+/*
+	PolyVoice registry
+*/
+
+// RegisterPolyVoiceFactory register a poly voice factory function
+func (registry *registry) RegisterPolyVoiceFactory(factoryName string, factory PolyVoiceFactory, numOutlets int) {
+	registry.voices[factoryName] = &PolyVoiceFactoryEntry{
+		Factory:    factory,
+		NumOutlets: numOutlets,
+	}
+}
+
+// GetPolyVoiceFactory get poly voice factory
+func (registry *registry) GetPolyVoiceFactoryEntry(factoryName string) *PolyVoiceFactoryEntry {
+	return registry.voices[factoryName]
 }
 
 /*
@@ -25,8 +50,8 @@ var Registry = &registry{
 */
 
 // RegisterModuleFactory register a module factory function
-func (registry *registry) RegisterModuleFactory(factoryName string, factoryFunction ModuleFactoryFunction) {
-	registry.modules[factoryName] = factoryFunction
+func (registry *registry) RegisterModuleFactory(factoryName string, factory ModuleFactory) {
+	registry.modules[factoryName] = factory
 }
 
 // NewModule create a new module from a factory

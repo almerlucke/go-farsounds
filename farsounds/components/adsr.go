@@ -153,6 +153,11 @@ func (adsr *ADSR) Reset() {
 	adsr.output = 0
 }
 
+// Idle check
+func (adsr *ADSR) Idle() bool {
+	return adsr.state == ADSRIdle
+}
+
 /*
    ADSR module
 */

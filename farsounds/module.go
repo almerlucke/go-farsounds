@@ -1,6 +1,10 @@
 package farsounds
 
-import "container/list"
+import (
+	"container/list"
+	"fmt"
+	"reflect"
+)
 
 // Buffer is a alias for a float64 slice
 type Buffer []float64
@@ -30,7 +34,7 @@ type Module interface {
 	// Prepare for DSP
 	PrepareDSP()
 
-	// DSP generate samples
+	// DSP generate samples, called from outside
 	DSP(timestamp int64)
 
 	// Perform Cleanup to release any resources
@@ -137,6 +141,7 @@ func NewBaseModule(numInlets int, numOutlets int, buflen int32, sr float64) *Bas
 
 // PrepareDSP prepares for DSP
 func (baseModule *BaseModule) PrepareDSP() {
+	fmt.Printf("prepare dsp %v\n", reflect.TypeOf(baseModule.Parent))
 	baseModule.Processed = false
 }
 
@@ -144,6 +149,7 @@ func (baseModule *BaseModule) PrepareDSP() {
 func (baseModule *BaseModule) DSP(timestamp int64) {
 	// Check if we already processed for this DSP cycle, if so return
 	if baseModule.Processed {
+		fmt.Printf("never called\n")
 		return
 	}
 

@@ -1,0 +1,54 @@
+{
+    "sampleRate": 44100.0,
+    "bufferLength": 512,
+    "patch": {
+        "numInlets": 0,
+        "numOutlets": 2,
+        "modules": {
+            "poly1": {
+                "type": "poly",
+                "settings": {
+                    "factory": "sinvoice"
+                }
+            },
+            "allpass1": {
+                "type": "allpass",
+                "settings": {
+                    "delay": 0.4,
+                    "feedback": 0.2
+                }
+            },
+            "allpass2": {
+                "type": "allpass",
+                "settings": {
+                    "delay": 0.75,
+                    "feedback": 0.2
+                }
+            }
+        },
+        "connections": [{
+            "from": "poly1",
+            "outlet": 0,
+            "to": "allpass1",
+            "inlet": 0
+        }, {
+            "from": "allpass1",
+            "outlet": 0,
+            "to": "__outlet1",
+            "inlet": 0
+        }, {
+            "from": "poly1",
+            "outlet": 0,
+            "to": "allpass2",
+            "inlet": 0
+        }, {
+            "from": "allpass2",
+            "outlet": 0,
+            "to": "__outlet2",
+            "inlet": 0
+        }],
+        "scores": [
+            "sinvoiceScore.json"
+        ]
+    }
+}
