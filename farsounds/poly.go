@@ -139,6 +139,7 @@ func (module *PolyVoiceModule) DSP(timestamp int64) {
 		instance := elem.Value.(*polyVoiceInstance)
 		voice := instance.voice
 
+		// Set temp elem, so we can savely remove elem from list
 		tmpElem := elem
 		elem = elem.Next()
 
