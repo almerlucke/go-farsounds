@@ -18,6 +18,7 @@ func setup() {
 
 	farsounds.Registry.RegisterModuleFactory("patch", farsounds.PatchFactory)
 	farsounds.Registry.RegisterModuleFactory("poly", farsounds.PolyVoiceModuleFactory)
+
 	farsounds.Registry.RegisterModuleFactory("osc", components.OscModuleFactory)
 	farsounds.Registry.RegisterModuleFactory("square", components.SquareModuleFactory)
 	farsounds.Registry.RegisterModuleFactory("adsr", components.ADSRModuleFactory)
@@ -31,9 +32,9 @@ func main() {
 	setup()
 
 	inputJSONFile := "examples/exampleScripts/sinvoice/sinvoicePatch.json"
-	outputSoundFile := "/users/almerlucke/Desktop/sinvoice.aiff"
+	outputSoundFile := "/users/almerlucke/Desktop/sinvoice"
 
-	err := farsounds.SoundFileFromScript(inputJSONFile, outputSoundFile, 9.0)
+	err := farsounds.SoundFileFromScript(inputJSONFile, outputSoundFile, 34.0)
 	if err != nil {
 		fmt.Printf("err %v\n", err)
 	}

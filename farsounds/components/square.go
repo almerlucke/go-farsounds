@@ -66,9 +66,6 @@ func SquareModuleFactory(settings interface{}, buflen int32, sr float64) (farsou
 
 // DSP fills output buffer for this square module with samples
 func (module *SquareModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	buflen := module.GetBufferLength()
 	sr := module.GetSampleRate()
 

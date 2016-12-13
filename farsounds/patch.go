@@ -68,9 +68,6 @@ func NewInletModule(inlet *Inlet, buflen int32, sr float64) *InletModule {
 
 // DSP processor for patch inlet, copy patch inlet samples to module outlet
 func (module *InletModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	outBuffer := module.Outlets[0].Buffer
 	// Copy patch inlet buffer to outlet buffer
 	for i, v := range module.inlet.Buffer {
@@ -89,9 +86,6 @@ func NewOutletModule(outlet *Outlet, buflen int32, sr float64) *OutletModule {
 
 // DSP processor for patch outlet, copy module inlet samples to patch outlet
 func (module *OutletModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	outBuffer := module.outlet.Buffer
 	// Copy inlet buffer to patch outlet buffer
 	for i, v := range module.Inlets[0].Buffer {
@@ -266,34 +260,25 @@ func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error
 	return patch, nil
 }
 
-// PrepareDSP prepare for dsp
-func (patch *Patch) PrepareDSP() {
-	// First call base module prepare dsp
-	patch.BaseModule.PrepareDSP()
-
-	// Prepare all modules first
-	for e := patch.Modules.Front(); e != nil; e = e.Next() {
-		module := e.Value.(Module)
-		module.PrepareDSP()
-	}
-}
-
 // DSP processor for patch, perform DSP on internal modules
 func (patch *Patch) DSP(timestamp int64) {
-	// First call base module dsp
-	patch.BaseModule.DSP(timestamp)
-
 	// Process all score players first
 	for e := patch.ScorePlayers.Front(); e != nil; e = e.Next() {
 		player := e.Value.(*ScorePlayer)
 		player.Play(patch)
 	}
 
+	// Prepare all modules first
+	for e := patch.Modules.Front(); e != nil; e = e.Next() {
+		module := e.Value.(Module)
+		module.PrepareDSP()
+	}
+
 	// Loop through outlet modules and perform DSP, pulling all internally
 	// connected modules. The outlet modules will copy their outputs
 	// to the patch outlets
 	for _, outletModule := range patch.OutletModules {
-		outletModule.DSP(timestamp)
+		outletModule.RequestDSP(timestamp)
 	}
 }
 

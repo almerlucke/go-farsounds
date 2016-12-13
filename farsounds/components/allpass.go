@@ -86,9 +86,6 @@ func NewAllpassModule(maxDelay float64, delay float64, feedback float64, buflen 
 
 // DSP for allpass module
 func (module *AllpassModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	buflen := module.GetBufferLength()
 	sr := module.GetSampleRate()
 

@@ -29,6 +29,7 @@ type VoiceModule interface {
 type polyVoiceInstance struct {
 	voice            VoiceModule
 	sampsTillNoteOff int64
+	noteOffSend      bool
 }
 
 // PolyVoiceFactory factory for voice modules
@@ -89,8 +90,6 @@ func (module *PolyVoiceModule) getFreeVoice() *polyVoiceInstance {
 	e := module.FreeVoicePool.Front()
 
 	if e == nil {
-		fmt.Printf("new voice\n")
-
 		// No free module, get a new voice from the factory
 		voiceModule := module.Factory(module.GetBufferLength(), module.GetSampleRate())
 		instance = new(polyVoiceInstance)
@@ -99,8 +98,6 @@ func (module *PolyVoiceModule) getFreeVoice() *polyVoiceInstance {
 		// Add the new voice instance to the used voice pool
 		module.UsedVoicePool.PushBack(instance)
 	} else {
-		fmt.Printf("old voice\n")
-
 		// Get instance from free list and add to used list
 		instance = module.FreeVoicePool.Remove(e).(*polyVoiceInstance)
 		module.UsedVoicePool.PushFront(instance)
@@ -109,31 +106,8 @@ func (module *PolyVoiceModule) getFreeVoice() *polyVoiceInstance {
 	return instance
 }
 
-// PrepareDSP prepare for dsp
-func (module *PolyVoiceModule) PrepareDSP() {
-	module.BaseModule.PrepareDSP()
-
-	fmt.Printf("prepare dsp\n")
-
-	for e := module.UsedVoicePool.Front(); e != nil; e = e.Next() {
-		instance := e.Value.(*polyVoiceInstance)
-		voice := instance.voice
-
-		if !voice.IsFinished() {
-			voice.PrepareDSP()
-		} else {
-			module.UsedVoicePool.Remove(e)
-			module.FreeVoicePool.PushBack(instance)
-		}
-	}
-}
-
 // DSP do some dsp
 func (module *PolyVoiceModule) DSP(timestamp int64) {
-	module.BaseModule.DSP(timestamp)
-
-	fmt.Printf("dsp\n")
-
 	buflen := module.GetBufferLength()
 
 	// First zero out buffers
@@ -146,16 +120,19 @@ func (module *PolyVoiceModule) DSP(timestamp int64) {
 	}
 
 	// Loop through voice modules
-	for e := module.UsedVoicePool.Front(); e != nil; e = e.Next() {
-		instance := e.Value.(*polyVoiceInstance)
+	for elem := module.UsedVoicePool.Front(); elem != nil; {
+		instance := elem.Value.(*polyVoiceInstance)
 		voice := instance.voice
 
-		if instance.sampsTillNoteOff <= 0 {
-			voice.NoteOff()
-		}
+		tmpElem := elem
+		elem = elem.Next()
 
-		if !voice.IsFinished() {
-			voice.DSP(timestamp)
+		if voice.IsFinished() {
+			module.UsedVoicePool.Remove(tmpElem)
+			module.FreeVoicePool.PushBack(instance)
+		} else {
+			voice.PrepareDSP()
+			voice.RequestDSP(timestamp)
 
 			for outletIndex, voiceOutlet := range voice.GetOutlets() {
 				voiceBuffer := voiceOutlet.Buffer
@@ -166,10 +143,13 @@ func (module *PolyVoiceModule) DSP(timestamp int64) {
 				}
 			}
 
-			instance.sampsTillNoteOff -= int64(buflen)
-		} else {
-			module.UsedVoicePool.Remove(e)
-			module.FreeVoicePool.PushBack(instance)
+			if !instance.noteOffSend {
+				instance.sampsTillNoteOff -= int64(buflen)
+				if instance.sampsTillNoteOff <= 0 {
+					voice.NoteOff()
+					instance.noteOffSend = true
+				}
+			}
 		}
 	}
 }
@@ -196,8 +176,7 @@ func (module *PolyVoiceModule) Message(message Message) {
 	sampsTillNoteOff := int64(sr * duration)
 
 	instance := module.getFreeVoice()
-	if instance != nil {
-		instance.voice.NoteOn(duration, sr, settings)
-		instance.sampsTillNoteOff = sampsTillNoteOff
-	}
+	instance.voice.NoteOn(duration, sr, settings)
+	instance.noteOffSend = false
+	instance.sampsTillNoteOff = sampsTillNoteOff
 }

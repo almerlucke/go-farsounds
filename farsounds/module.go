@@ -1,10 +1,6 @@
 package farsounds
 
-import (
-	"container/list"
-	"fmt"
-	"reflect"
-)
+import "container/list"
 
 // Buffer is a alias for a float64 slice
 type Buffer []float64
@@ -34,7 +30,10 @@ type Module interface {
 	// Prepare for DSP
 	PrepareDSP()
 
-	// DSP generate samples, called from outside
+	// Request for DSP
+	RequestDSP(timestamp int64)
+
+	// DSP generate samples, overwrite this by modules
 	DSP(timestamp int64)
 
 	// Perform Cleanup to release any resources
@@ -141,15 +140,17 @@ func NewBaseModule(numInlets int, numOutlets int, buflen int32, sr float64) *Bas
 
 // PrepareDSP prepares for DSP
 func (baseModule *BaseModule) PrepareDSP() {
-	fmt.Printf("prepare dsp %v\n", reflect.TypeOf(baseModule.Parent))
 	baseModule.Processed = false
 }
 
-// DSP prepares inlets, calls DSP on connected modules
-func (baseModule *BaseModule) DSP(timestamp int64) {
+// DSP STUB
+func (baseModule *BaseModule) DSP(timestamp int64) {}
+
+// RequestDSP prepares inlets, calls RequestDSP on connected modules and DSP on
+// parent module
+func (baseModule *BaseModule) RequestDSP(timestamp int64) {
 	// Check if we already processed for this DSP cycle, if so return
 	if baseModule.Processed {
-		fmt.Printf("never called\n")
 		return
 	}
 
@@ -170,8 +171,8 @@ func (baseModule *BaseModule) DSP(timestamp int64) {
 			// Get connection
 			conn := e.Value.(*Connection)
 
-			// Call DSP of connected module
-			conn.To.DSP(timestamp)
+			// Call request DSP of connected module
+			conn.To.RequestDSP(timestamp)
 
 			// Get output buffer for this connection
 			outBuffer := conn.To.GetOutlets()[conn.Index].Buffer
@@ -182,6 +183,9 @@ func (baseModule *BaseModule) DSP(timestamp int64) {
 			}
 		}
 	}
+
+	// Call real DSP of parent
+	baseModule.Parent.DSP(timestamp)
 }
 
 // Cleanup disconnects inlets and outlets to break cyclic references and calls CleanupFunction

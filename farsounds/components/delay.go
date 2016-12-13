@@ -110,9 +110,6 @@ func NewDelayModule(lengthInSeconds float64, readLocationInSeconds float64, bufl
 
 // DSP for delay module
 func (module *DelayModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	buflen := module.GetBufferLength()
 	sr := module.GetSampleRate()
 

@@ -3,31 +3,20 @@
     "action": "send",
     "payload": {
         "poly1": {
-            "duration": 1.0,
+            "duration": 2.0,
             "settings": {
-                "frequency": 400.0, "amplitude": 1.0
+                "frequency": 100.0, "amplitude": 1.0
             }
         }
     }
 }, {
-    "on": 0.25,
+    "on": 1.5,
     "action": "send",
     "payload": {
         "poly1": {
-            "duration": 1.0,
+            "duration": 4.0,
             "settings": {
-                "frequency": 800.0, "amplitude": 1.0
-            }
-        }
-    }
-}, {
-    "on": 1.0,
-    "action": "send",
-    "payload": {
-        "poly1": {
-            "duration": 3.0,
-            "settings": {
-                "frequency": 1200.0, "amplitude": 1.0
+                "frequency": 200.0, "amplitude": 1.0
             }
         }
     }
@@ -36,43 +25,79 @@
     "action": "send",
     "payload": {
         "poly1": {
-            "duration": 1.0,
+            "duration": 3.0,
             "settings": {
                 "frequency": 400.0, "amplitude": 1.0
             }
         }
     }
 }, {
-    "on": 2.4,
+    "on": 3.5,
     "action": "send",
     "payload": {
         "poly1": {
-            "duration": 1.0,
-            "settings": {
-                "frequency": 600.0, "amplitude": 1.0
-            }
-        }
-    }
-}, {
-    "on": 3.4,
-    "action": "send",
-    "payload": {
-        "poly1": {
-            "duration": 4.0,
+            "duration": 2.0,
             "settings": {
                 "frequency": 800.0, "amplitude": 1.0
             }
         }
     }
 }, {
-    "on": 4.4,
+    "on": 4.0,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 1.0,
+            "settings": {
+                "frequency": 1600.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 4.5,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 1.0,
+            "settings": {
+                "frequency": 2400.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 5.5,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 2.0,
+            "settings": {
+                "frequency": 1200.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 6.5,
     "action": "send",
     "payload": {
         "poly1": {
             "duration": 3.0,
             "settings": {
-                "frequency": 1000.0, "amplitude": 1.0
+                "frequency": 600.0, "amplitude": 1.0
             }
         }
     }
+}, {
+    "on": 8.0,
+    "action": "send",
+    "payload": {
+        "poly1": {
+            "duration": 4.0,
+            "settings": {
+                "frequency": 300.0, "amplitude": 1.0
+            }
+        }
+    }
+}, {
+    "on": 13.0,
+    "action": "reset"
 }]

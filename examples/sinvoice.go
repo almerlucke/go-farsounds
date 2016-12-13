@@ -31,8 +31,6 @@ func NewSinVoiceModule(buflen int32, sr float64) farsounds.VoiceModule {
 
 // DSP for module
 func (module *SinVoiceModule) DSP(timestamp int64) {
-	module.BaseModule.DSP(timestamp)
-
 	buflen := module.GetBufferLength()
 	output := module.Outlets[0].Buffer
 

@@ -188,9 +188,6 @@ func ADSRModuleFactory(settings interface{}, buflen int32, sr float64) (farsound
 
 // DSP process ADSR module
 func (module *ADSRModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	buflen := module.GetBufferLength()
 
 	var gateInput []float64

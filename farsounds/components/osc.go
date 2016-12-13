@@ -66,9 +66,6 @@ func OscModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds
 
 // DSP fills output buffer for this osc module with samples
 func (module *OscModule) DSP(timestamp int64) {
-	// First call base module dsp
-	module.BaseModule.DSP(timestamp)
-
 	buflen := module.GetBufferLength()
 	sr := module.GetSampleRate()
 

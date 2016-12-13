@@ -145,7 +145,7 @@ func SoundFileFromPatch(patch *Patch, soundFilePath string, numSeconds float64) 
 	// Generate samples for N cycles
 	for i := int64(0); i < numCycles; i++ {
 		patch.PrepareDSP()
-		patch.DSP(timestamp)
+		patch.RequestDSP(timestamp)
 
 		// Interleave channels
 		for j := int32(0); j < buflen; j++ {

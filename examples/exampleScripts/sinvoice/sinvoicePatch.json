@@ -14,15 +14,15 @@
             "allpass1": {
                 "type": "allpass",
                 "settings": {
-                    "delay": 0.4,
-                    "feedback": 0.2
+                    "delay": 2.5,
+                    "feedback": 0.35
                 }
             },
             "allpass2": {
                 "type": "allpass",
                 "settings": {
-                    "delay": 0.75,
-                    "feedback": 0.2
+                    "delay": 1.5,
+                    "feedback": 0.4
                 }
             }
         },
@@ -32,14 +32,14 @@
             "to": "allpass1",
             "inlet": 0
         }, {
-            "from": "allpass1",
-            "outlet": 0,
-            "to": "__outlet1",
-            "inlet": 0
-        }, {
             "from": "poly1",
             "outlet": 0,
             "to": "allpass2",
+            "inlet": 0
+        }, {
+            "from": "allpass1",
+            "outlet": 0,
+            "to": "__outlet1",
             "inlet": 0
         }, {
             "from": "allpass2",
