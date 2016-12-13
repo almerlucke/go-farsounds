@@ -6,6 +6,10 @@ import (
 	"fmt"
 )
 
+/*
+	Interfaces
+*/
+
 // Voice interface must be implemented by components to be used
 // as voice by other components such as polyvoice
 type Voice interface {
@@ -26,16 +30,17 @@ type VoiceModule interface {
 	Voice
 }
 
-type polyVoiceInstance struct {
-	voice            VoiceModule
-	sampsTillNoteOff int64
-	noteOffSend      bool
-}
+/*
+	Poly factory and module
+*/
 
 // PolyVoiceFactory factory for voice modules
 type PolyVoiceFactory func(buflen int32, sr float64) VoiceModule
 
-// PolyVoiceModule poly voice module
+// PolyVoiceModule poly voice module. Play multiple voice modules at the same time,
+// no limit to amount of voices, voice can be any module including patches, as
+// long as they implement VoiceModule interface. Voices are triggered via Message
+// function
 type PolyVoiceModule struct {
 	// Inherit from BaseModule
 	*BaseModule
@@ -49,6 +54,16 @@ type PolyVoiceModule struct {
 	// Used voice pool
 	UsedVoicePool *list.List
 }
+
+type polyVoiceInstance struct {
+	voice            VoiceModule
+	sampsTillNoteOff int64
+	noteOffSend      bool
+}
+
+/*
+	Poly methods
+*/
 
 // NewPolyVoiceModule creates a new osc module
 func NewPolyVoiceModule(factory PolyVoiceFactory, numOutlets int, buflen int32, sr float64) *PolyVoiceModule {
