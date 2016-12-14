@@ -121,6 +121,24 @@ func (module *PolyVoiceModule) getFreeVoice() *polyVoiceInstance {
 	return instance
 }
 
+// Cleanup voices
+func (module *PolyVoiceModule) Cleanup() {
+	// First call base cleanup
+	module.BaseModule.Cleanup()
+
+	// Cleanup free voices
+	for elem := module.FreeVoicePool.Front(); elem != nil; elem = elem.Next() {
+		voice := elem.Value.(*polyVoiceInstance).voice
+		voice.Cleanup()
+	}
+
+	// Cleanup used voices
+	for elem := module.UsedVoicePool.Front(); elem != nil; elem = elem.Next() {
+		voice := elem.Value.(*polyVoiceInstance).voice
+		voice.Cleanup()
+	}
+}
+
 // DSP do some dsp
 func (module *PolyVoiceModule) DSP(timestamp int64) {
 	buflen := module.GetBufferLength()

@@ -17,6 +17,6 @@ func init() {
 	farsounds.Registry.RegisterModuleFactory("delay", DelayModuleFactory)
 	farsounds.Registry.RegisterModuleFactory("allpass", AllpassModuleFactory)
 
-	fmt.Printf("- register poly voice factories\n")
+	fmt.Printf("- register poly voice factories\n\n")
 	farsounds.Registry.RegisterPolyVoiceFactory("patchvoice", voices.PatchVoiceFactory, 2)
 }

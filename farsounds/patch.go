@@ -284,6 +284,10 @@ func (patch *Patch) DSP(timestamp int64) {
 
 // Cleanup all contained modules
 func (patch *Patch) Cleanup() {
+	// First call base cleanup
+	patch.BaseModule.Cleanup()
+
+	// Cleanup contained modules
 	for e := patch.Modules.Front(); e != nil; e = e.Next() {
 		module := e.Value.(Module)
 		module.Cleanup()

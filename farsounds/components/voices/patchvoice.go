@@ -51,6 +51,18 @@ func (module *PatchVoiceModule) envProcess() float64 {
 	return module.env
 }
 
+// Cleanup module
+func (module *PatchVoiceModule) Cleanup() {
+	// First call base cleanup
+	module.BaseModule.Cleanup()
+
+	// Cleanup patch
+	if module.patch != nil {
+		module.patch.Cleanup()
+		module.patch = nil
+	}
+}
+
 // IsFinished for patch voice module
 func (module *PatchVoiceModule) IsFinished() bool {
 	return module.envState == patchVoiceEnvStateIdle
@@ -93,6 +105,13 @@ func (module *PatchVoiceModule) NoteOn(duration float64, sr float64, settings in
 		return
 	}
 
+	// Clean up old patch
+	if module.patch != nil {
+		module.patch.Cleanup()
+		module.patch = nil
+	}
+
+	// Create new patch and set envelope
 	module.patch = _patch.(*farsounds.Patch)
 	module.envState = patchVoiceEnvStateAttack
 	module.env = 0.0

@@ -16,6 +16,6 @@ func init() {
 	Registry.RegisterModuleFactory("patch", PatchFactory)
 	Registry.RegisterModuleFactory("poly", PolyVoiceModuleFactory)
 
-	fmt.Printf("- register wave tables\n")
+	fmt.Printf("- register wave tables\n\n")
 	Registry.RegisterWaveTable("sine", SineTable)
 }
