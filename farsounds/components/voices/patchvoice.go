@@ -1,4 +1,4 @@
-package components
+package voices
 
 import "github.com/almerlucke/go-farsounds/farsounds"
 
@@ -24,8 +24,8 @@ type PatchVoiceModule struct {
 	releaseInc float64
 }
 
-// NewPatchVoiceModule factory
-func NewPatchVoiceModule(buflen int32, sr float64) farsounds.VoiceModule {
+// PatchVoiceFactory factory
+func PatchVoiceFactory(buflen int32, sr float64) farsounds.VoiceModule {
 	patchVoiceModule := new(PatchVoiceModule)
 	patchVoiceModule.BaseModule = farsounds.NewBaseModule(0, 2, buflen, sr)
 	patchVoiceModule.Parent = patchVoiceModule

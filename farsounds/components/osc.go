@@ -2,13 +2,12 @@ package components
 
 import (
 	"github.com/almerlucke/go-farsounds/farsounds"
-	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
 // Osc uses a phasor to do a lookup
 type Osc struct {
 	// Lookup table
-	*tables.Lookup
+	*Lookup
 	// Phasor for lookup
 	*Phasor
 	// Amplitude of output
@@ -18,7 +17,7 @@ type Osc struct {
 // NewOsc creates a new table lookup oscillator
 func NewOsc(table []float64, phase float64, inc float64, amp float64) *Osc {
 	osc := new(Osc)
-	osc.Lookup = tables.NewLookup(table)
+	osc.Lookup = NewLookup(table)
 	osc.Phasor = NewPhasor(phase, inc)
 	osc.Amplitude = amp
 	return osc
@@ -42,7 +41,7 @@ type OscModule struct {
 }
 
 // NewOscModule creates a new osc module
-func NewOscModule(table tables.WaveTable, phase float64, freq float64, amp float64, buflen int32, sr float64) *OscModule {
+func NewOscModule(table farsounds.WaveTable, phase float64, freq float64, amp float64, buflen int32, sr float64) *OscModule {
 	oscModule := new(OscModule)
 	oscModule.BaseModule = farsounds.NewBaseModule(3, 1, buflen, sr)
 	oscModule.Parent = oscModule
@@ -52,7 +51,7 @@ func NewOscModule(table tables.WaveTable, phase float64, freq float64, amp float
 
 // OscModuleFactory creates new osc modules
 func OscModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds.Module, error) {
-	table := tables.SineTable
+	table := farsounds.SineTable
 	phase := 0.0
 	freq := 100.0
 	amp := 1.0

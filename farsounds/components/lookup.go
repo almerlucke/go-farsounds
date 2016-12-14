@@ -1,16 +1,18 @@
-package tables
+package components
 
 import (
 	"math"
+
+	"github.com/almerlucke/go-farsounds/farsounds"
 )
 
 // Lookup holds table data
 type Lookup struct {
-	Table WaveTable
+	Table farsounds.WaveTable
 }
 
 // NewLookup creates a new lookup
-func NewLookup(table WaveTable) *Lookup {
+func NewLookup(table farsounds.WaveTable) *Lookup {
 	lookup := new(Lookup)
 	lookup.Table = table
 	return lookup

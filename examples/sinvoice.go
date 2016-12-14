@@ -3,7 +3,6 @@ package examples
 import (
 	"github.com/almerlucke/go-farsounds/farsounds"
 	"github.com/almerlucke/go-farsounds/farsounds/components"
-	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
 // SinVoiceModule simple example voice
@@ -25,7 +24,7 @@ func NewSinVoiceModule(buflen int32, sr float64) farsounds.VoiceModule {
 	sinVoiceModule.Parent = sinVoiceModule
 
 	sinVoiceModule.adsr = components.NewADSR()
-	sinVoiceModule.osc = components.NewOsc(tables.SineTable, 0, 100.0/sr, 1.0)
+	sinVoiceModule.osc = components.NewOsc(farsounds.SineTable, 0, 100.0/sr, 1.0)
 	sinVoiceModule.pan = 0.5
 
 	return sinVoiceModule

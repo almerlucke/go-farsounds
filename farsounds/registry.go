@@ -2,8 +2,6 @@ package farsounds
 
 import (
 	"fmt"
-
-	"github.com/almerlucke/go-farsounds/farsounds/tables"
 )
 
 // ModuleFactory is the module generator function for a factory
@@ -17,14 +15,14 @@ type PolyVoiceFactoryEntry struct {
 
 type registry struct {
 	moduleFactories map[string]ModuleFactory
-	waveTables      map[string]tables.WaveTable
+	waveTables      map[string]WaveTable
 	voiceFactories  map[string]*PolyVoiceFactoryEntry
 }
 
 // Registry for modules and wave tables
 var Registry = &registry{
 	moduleFactories: make(map[string]ModuleFactory),
-	waveTables:      make(map[string]tables.WaveTable),
+	waveTables:      make(map[string]WaveTable),
 	voiceFactories:  make(map[string]*PolyVoiceFactoryEntry),
 }
 
@@ -75,12 +73,12 @@ func (registry *registry) NewModule(factoryName string, identifier string, setti
 */
 
 // RegisterWaveTable register a wave table
-func (registry *registry) RegisterWaveTable(waveTableName string, waveTable tables.WaveTable) {
+func (registry *registry) RegisterWaveTable(waveTableName string, waveTable WaveTable) {
 	registry.waveTables[waveTableName] = waveTable
 }
 
 // GetWaveTable get wave table from registry by name
-func (registry *registry) GetWaveTable(waveTableName string) (tables.WaveTable, error) {
+func (registry *registry) GetWaveTable(waveTableName string) (WaveTable, error) {
 	if waveTable, ok := registry.waveTables[waveTableName]; ok {
 		return waveTable, nil
 	}
