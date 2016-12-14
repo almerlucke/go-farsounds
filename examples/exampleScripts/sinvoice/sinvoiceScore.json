@@ -5,7 +5,7 @@
         "poly1": {
             "duration": 2.0,
             "settings": {
-                "frequency": 100.0, "amplitude": 1.0
+                "frequency": 100.0, "amplitude": 1.0, "pan": 0.1
             }
         }
     }
@@ -16,7 +16,7 @@
         "poly1": {
             "duration": 4.0,
             "settings": {
-                "frequency": 200.0, "amplitude": 1.0
+                "frequency": 200.0, "amplitude": 0.7, "pan": 0.3
             }
         }
     }
@@ -27,7 +27,7 @@
         "poly1": {
             "duration": 3.0,
             "settings": {
-                "frequency": 400.0, "amplitude": 1.0
+                "frequency": 400.0, "amplitude": 0.5, "pan": 0.5
             }
         }
     }
@@ -38,7 +38,7 @@
         "poly1": {
             "duration": 2.0,
             "settings": {
-                "frequency": 800.0, "amplitude": 1.0
+                "frequency": 800.0, "amplitude": 0.3, "pan": 0.6
             }
         }
     }
@@ -49,7 +49,7 @@
         "poly1": {
             "duration": 1.0,
             "settings": {
-                "frequency": 1600.0, "amplitude": 1.0
+                "frequency": 1600.0, "amplitude": 0.5, "pan": 0.8
             }
         }
     }
@@ -60,7 +60,7 @@
         "poly1": {
             "duration": 1.0,
             "settings": {
-                "frequency": 2400.0, "amplitude": 1.0
+                "frequency": 2400.0, "amplitude": 1.0, "pan": 0.5
             }
         }
     }
@@ -71,7 +71,7 @@
         "poly1": {
             "duration": 2.0,
             "settings": {
-                "frequency": 1200.0, "amplitude": 1.0
+                "frequency": 1200.0, "amplitude": 0.8, "pan": 0.4
             }
         }
     }
@@ -82,7 +82,7 @@
         "poly1": {
             "duration": 3.0,
             "settings": {
-                "frequency": 600.0, "amplitude": 1.0
+                "frequency": 600.0, "amplitude": 0.2, "pan": 0.2
             }
         }
     }
@@ -93,7 +93,7 @@
         "poly1": {
             "duration": 4.0,
             "settings": {
-                "frequency": 300.0, "amplitude": 1.0
+                "frequency": 300.0, "amplitude": 0.4, "pan": 0.4
             }
         }
     }

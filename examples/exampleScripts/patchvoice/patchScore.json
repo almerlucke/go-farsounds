@@ -1,0 +1,36 @@
+[
+    {
+        "on": 0.0,
+        "action": "send",
+        "payload": {
+            "poly1": {
+                "duration": 8.0,
+                "settings": {
+                    "patch": "examples/exampleScripts/patchvoice/subPatch1.json", "attack": 1.0, "release": 1.0
+                }
+            }
+        }
+    }, {
+        "on": 5.0,
+        "action": "send",
+        "payload": {
+            "poly1": {
+                "duration": 8.0,
+                "settings": {
+                    "patch": "examples/exampleScripts/patchvoice/subPatch2.json", "attack": 1.0, "release": 1.0
+                }
+            }
+        }
+    } , {
+        "on": 10.0,
+        "action": "send",
+        "payload": {
+            "poly1": {
+                "duration": 8.0,
+                "settings": {
+                    "patch": "examples/exampleScripts/patchvoice/subPatch3.json", "attack": 1.0, "release": 1.0
+                }
+            }
+        }
+    }
+]

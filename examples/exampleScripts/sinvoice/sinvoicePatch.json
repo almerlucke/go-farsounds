@@ -14,15 +14,15 @@
             "allpass1": {
                 "type": "allpass",
                 "settings": {
-                    "delay": 2.5,
-                    "feedback": 0.35
+                    "delay": 0.72,
+                    "feedback": 0.75
                 }
             },
             "allpass2": {
                 "type": "allpass",
                 "settings": {
-                    "delay": 1.5,
-                    "feedback": 0.4
+                    "delay": 0.6,
+                    "feedback": 0.8
                 }
             }
         },
@@ -33,7 +33,7 @@
             "inlet": 0
         }, {
             "from": "poly1",
-            "outlet": 0,
+            "outlet": 1,
             "to": "allpass2",
             "inlet": 0
         }, {

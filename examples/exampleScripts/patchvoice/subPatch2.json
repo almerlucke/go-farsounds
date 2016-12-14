@@ -1,0 +1,32 @@
+{
+    "numInlets": 0,
+    "numOutlets": 1,
+    "modules": {
+        "osc1": {
+            "type": "osc",
+            "settings": {
+                "table": "sine",
+                "frequency": 6.5,
+                "amplitude": 0.000122
+            }
+        },
+        "osc2": {
+            "type": "osc",
+            "settings": {
+                "table": "sine",
+                "frequency": 600.0
+            }
+        }
+    },
+    "connections": [{
+        "from": "osc1",
+        "outlet": 0,
+        "to": "osc2",
+        "inlet": 0
+    }, {
+        "from": "osc2",
+        "outlet": 0,
+        "to": "__outlet1",
+        "inlet": 0
+    }]
+}

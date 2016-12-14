@@ -14,17 +14,19 @@ type SinVoiceModule struct {
 	// Voice with ADSR and oscillator
 	adsr *components.ADSR
 	osc  *components.Osc
+	pan  float64
 }
 
 // NewSinVoiceModule new voice module
 func NewSinVoiceModule(buflen int32, sr float64) farsounds.VoiceModule {
 	// generate new sin voice module
 	sinVoiceModule := new(SinVoiceModule)
-	sinVoiceModule.BaseModule = farsounds.NewBaseModule(0, 1, buflen, sr)
+	sinVoiceModule.BaseModule = farsounds.NewBaseModule(0, 2, buflen, sr)
 	sinVoiceModule.Parent = sinVoiceModule
 
 	sinVoiceModule.adsr = components.NewADSR()
 	sinVoiceModule.osc = components.NewOsc(tables.SineTable, 0, 100.0/sr, 1.0)
+	sinVoiceModule.pan = 0.5
 
 	return sinVoiceModule
 }
@@ -32,10 +34,14 @@ func NewSinVoiceModule(buflen int32, sr float64) farsounds.VoiceModule {
 // DSP for module
 func (module *SinVoiceModule) DSP(timestamp int64) {
 	buflen := module.GetBufferLength()
-	output := module.Outlets[0].Buffer
+	leftOutput := module.Outlets[0].Buffer
+	rightOutput := module.Outlets[1].Buffer
 
 	for i := int32(0); i < buflen; i++ {
-		output[i] = module.adsr.Process() * module.osc.Process(0)
+		value := module.adsr.Process() * module.osc.Process(0)
+		left, right := components.SinusoidalPanning(value, module.pan)
+		leftOutput[i] = left
+		rightOutput[i] = right
 	}
 }
 
@@ -51,7 +57,11 @@ func (module *SinVoiceModule) NoteOff() {
 
 // NoteOn action
 func (module *SinVoiceModule) NoteOn(duration float64, sr float64, settings interface{}) {
-	settingsMap := settings.(map[string]interface{})
+	settingsMap, ok := settings.(map[string]interface{})
+	if !ok {
+		return
+	}
+
 	module.adsr.SetAttackRate(0.1 * sr)
 	module.adsr.SetDecayRate(0.1 * sr)
 	module.adsr.SetReleaseRate(1.4 * sr)
@@ -64,6 +74,10 @@ func (module *SinVoiceModule) NoteOn(duration float64, sr float64, settings inte
 
 	if amplitude, ok := settingsMap["amplitude"].(float64); ok {
 		module.osc.Amplitude = amplitude
+	}
+
+	if pan, ok := settingsMap["pan"].(float64); ok {
+		module.pan = pan
 	}
 
 	module.osc.Phase = 0.0
