@@ -60,7 +60,7 @@
         "poly1": {
             "duration": 1.0,
             "settings": {
-                "frequency": 2400.0, "amplitude": 1.0, "pan": 0.5
+                "frequency": 2400.0, "amplitude": 0.1, "pan": 0.5
             }
         }
     }
@@ -71,7 +71,7 @@
         "poly1": {
             "duration": 2.0,
             "settings": {
-                "frequency": 1200.0, "amplitude": 0.8, "pan": 0.4
+                "frequency": 1200.0, "amplitude": 0.2, "pan": 0.4
             }
         }
     }

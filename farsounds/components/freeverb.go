@@ -6,6 +6,10 @@ import (
 	"github.com/almerlucke/go-farsounds/farsounds"
 )
 
+/*
+   Constants
+*/
+
 const (
 	minPositiveNormalFloat = 2.225073858507201e-308
 	numcombs               = 8
@@ -52,6 +56,10 @@ const (
 	allpasstuningR4        = allpasstuningL4 + stereospread
 )
 
+/*
+   undenormalise
+*/
+
 func undenormalise(val float64) float64 {
 	aval := math.Abs(val)
 	if aval < minPositiveNormalFloat {
@@ -61,6 +69,9 @@ func undenormalise(val float64) float64 {
 	return val
 }
 
+/*
+   Allpass
+*/
 type freeVerbAllpass struct {
 	buffer   []float64
 	bufidx   int
@@ -94,6 +105,10 @@ func (allpass *freeVerbAllpass) process(input float64) float64 {
 	allpass.bufidx = bufidx
 	return output
 }
+
+/*
+   Comb
+*/
 
 type freeVerbComb struct {
 	feedback    float64
@@ -139,6 +154,10 @@ func (comb *freeVerbComb) process(input float64) float64 {
 	comb.filterstore = filterstore
 	return output
 }
+
+/*
+   Module
+*/
 
 // FreeVerbModule module
 type FreeVerbModule struct {
@@ -212,6 +231,13 @@ func (freeverb *FreeVerbModule) update() {
 		freeverb.combL[i].setDamp(freeverb.damp1)
 		freeverb.combR[i].setDamp(freeverb.damp1)
 	}
+}
+
+// FreeVerbModuleFactory factory
+func FreeVerbModuleFactory(settings interface{}, buflen int32, sr float64) (farsounds.Module, error) {
+	module := NewFreeVerbModule(buflen, sr)
+	module.Message(settings)
+	return module, nil
 }
 
 // NewFreeVerbModule generate new freeverb module
@@ -305,5 +331,29 @@ func (freeverb *FreeVerbModule) DSP(timestamp int64) {
 
 		outBuffer1[i] = outL*freeverb.wet1 + outR*freeverb.wet2 + inputL*freeverb.dry
 		outBuffer2[i] = outR*freeverb.wet1 + outL*freeverb.wet2 + inputR*freeverb.dry
+	}
+}
+
+// Message received
+func (freeverb *FreeVerbModule) Message(message farsounds.Message) {
+	if valueMap, ok := message.(map[string]interface{}); ok {
+		if wet, ok := valueMap["wet"].(float64); ok {
+			freeverb.setWet(wet)
+		}
+		if roomSize, ok := valueMap["roomSize"].(float64); ok {
+			freeverb.setRoomSize(roomSize)
+		}
+		if dry, ok := valueMap["dry"].(float64); ok {
+			freeverb.setDry(dry)
+		}
+		if damp, ok := valueMap["damp"].(float64); ok {
+			freeverb.setDamp(damp)
+		}
+		if width, ok := valueMap["width"].(float64); ok {
+			freeverb.setWidth(width)
+		}
+		if mode, ok := valueMap["mode"].(float64); ok {
+			freeverb.setMode(mode)
+		}
 	}
 }

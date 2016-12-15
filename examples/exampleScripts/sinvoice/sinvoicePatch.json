@@ -24,6 +24,16 @@
                     "delay": 0.6,
                     "feedback": 0.8
                 }
+            },
+            "reverb": {
+                "type": "freeverb",
+                "settings": {
+                    "wet": 0.4,
+                    "dry": 0.2,
+                    "width": 0.6,
+                    "damp": 0.4,
+                    "roomSize": 0.5
+                }
             }
         },
         "connections": [{
@@ -39,11 +49,21 @@
         }, {
             "from": "allpass1",
             "outlet": 0,
-            "to": "__outlet1",
+            "to": "reverb",
             "inlet": 0
         }, {
             "from": "allpass2",
             "outlet": 0,
+            "to": "reverb",
+            "inlet": 1
+        }, {
+            "from": "reverb",
+            "outlet": 0,
+            "to": "__outlet1",
+            "inlet": 0
+        }, {
+            "from": "reverb",
+            "outlet": 1,
             "to": "__outlet2",
             "inlet": 0
         }],
