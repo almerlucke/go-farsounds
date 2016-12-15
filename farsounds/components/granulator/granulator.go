@@ -185,17 +185,17 @@ type TestGenerator struct {
 }
 
 func (generator *TestGenerator) GenerateTick(timestamp int64) bool {
-	return rand.Float64() > 0.95
+	return rand.Float64() > 0.9995
 }
 
 func (generator *TestGenerator) GenerateDuration(timestamp int64) float64 {
-	return (rand.Float64()*400.0 + 5.0) / 1000.0
+	return (rand.Float64()*50.0 + 5.0) / 1000.0
 }
 
 func (generator *TestGenerator) GenerateParameters(timestamp int64) interface{} {
 	parameters := make(map[string]interface{})
-	parameters["frequency"] = rand.Float64()*300.0 + 500.0
-	parameters["amplitude"] = rand.Float64()*0.8 + 0.2
+	parameters["frequency"] = rand.Float64()*1300.0 + 70.0
+	parameters["amplitude"] = rand.Float64()*0.8 + 0.1
 	return parameters
 }
 
