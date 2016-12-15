@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	fmt.Printf("Initialize Farsounds...\n")
+	fmt.Printf("\nInitialize Farsounds...\n")
 
 	fmt.Printf("- random seed\n")
 	rand.Seed(time.Now().UTC().UnixNano())

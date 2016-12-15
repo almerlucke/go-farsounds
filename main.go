@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/almerlucke/go-farsounds/examples"
 	"github.com/almerlucke/go-farsounds/farsounds"
 
@@ -29,6 +32,9 @@ func main() {
 		}
 	*/
 
+	fmt.Printf("Start rendering...\n\n")
+	startTime := time.Now()
+
 	testGenerator := &granulator.TestGenerator{}
 	gr := granulator.NewGranulator(testGenerator, testGenerator, testGenerator, testGenerator)
 	grModule := granulator.NewGranulatorModule(gr, 512, 44100.0)
@@ -36,5 +42,7 @@ func main() {
 	patch.Modules.PushBack(grModule)
 	grModule.Connect(0, patch.OutletModules[0], 0)
 
-	farsounds.SoundFileFromPatch(patch, "/Users/almerlucke/Desktop/grains", 10.0)
+	farsounds.SoundFileFromPatch(patch, "/Users/almerlucke/Desktop/grains", 20.0)
+
+	fmt.Printf("Soundfile rendered in %f sec\n\n", time.Now().Sub(startTime).Seconds())
 }

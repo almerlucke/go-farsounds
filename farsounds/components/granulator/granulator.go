@@ -116,6 +116,7 @@ func (granulator *Granulator) Process(timestamp int64, sr float64) (float64, flo
 
 	// Generate left and right sample
 	leftOut, rightOut := 0.0, 0.0
+
 	for elem := granulator.UsedGrains.Front(); elem != nil; {
 		tmpElem := elem
 		elem = elem.Next()
@@ -188,12 +189,12 @@ func (generator *TestGenerator) GenerateTick(timestamp int64) bool {
 }
 
 func (generator *TestGenerator) GenerateDuration(timestamp int64) float64 {
-	return (rand.Float64()*100 + 5) / 1000.0
+	return (rand.Float64()*400.0 + 5.0) / 1000.0
 }
 
 func (generator *TestGenerator) GenerateParameters(timestamp int64) interface{} {
 	parameters := make(map[string]interface{})
-	parameters["frequency"] = rand.Float64()*2800.0 + 100.0
+	parameters["frequency"] = rand.Float64()*300.0 + 500.0
 	parameters["amplitude"] = rand.Float64()*0.8 + 0.2
 	return parameters
 }
