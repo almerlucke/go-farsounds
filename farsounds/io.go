@@ -1,4 +1,4 @@
-package io
+package farsounds
 
 import (
 	"math"
@@ -6,6 +6,10 @@ import (
 
 	"github.com/mkb218/gosndfile/sndfile"
 )
+
+/*
+   SoundWriter
+*/
 
 // SoundWriter writes samples to soundfile and normalizes them
 type SoundWriter struct {
@@ -155,4 +159,65 @@ func (w *SoundWriter) normalizeAndExport() error {
 
 	// Close output
 	return outputFile.Close()
+}
+
+/*
+   Sound buffer
+*/
+
+// SoundFileBuffer contains sound file deinterleaved samples
+type SoundFileBuffer struct {
+	channels   [][]float64
+	sampleRate float64
+}
+
+// NewSoundFileBuffer load sound file from disk deinterleaved
+func NewSoundFileBuffer(filePath string) (*SoundFileBuffer, error) {
+	info := sndfile.Info{}
+
+	file, err := sndfile.Open(filePath, sndfile.Read, &info)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	// Create one big buffer to hold all samples
+	fileBuffer := make([]float64, int64(info.Channels)*info.Frames)
+
+	// Create separate channels by splitting buffer into info.Channels parts
+	channels := make([][]float64, info.Channels)
+	for i := int32(0); i < info.Channels; i++ {
+		channels[i] = fileBuffer[int64(i)*info.Frames : int64(i+1)*info.Frames]
+	}
+
+	// Deinterleave in blocks
+	sampleBlockSize := int64(2048) * int64(info.Channels)
+	samples := make([]float64, sampleBlockSize)
+	frameIndex := int64(0)
+
+	for {
+		framesRead, err := file.ReadFrames(samples)
+		if err != nil {
+			return nil, err
+		}
+
+		if framesRead == 0 {
+			break
+		}
+
+		for i := int64(0); i < framesRead; i++ {
+			for j := int64(0); j < int64(info.Channels); j++ {
+				channels[j][frameIndex+i] = samples[i*int64(info.Channels)+j]
+			}
+		}
+
+		frameIndex += framesRead
+	}
+
+	buffer := SoundFileBuffer{}
+	buffer.channels = channels
+	buffer.sampleRate = float64(info.Samplerate)
+
+	return &buffer, nil
 }

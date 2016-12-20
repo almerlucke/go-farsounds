@@ -23,7 +23,7 @@ func main() {
 
 	fmt.Printf("Generate soundfile from patch %v\n", inputJSONFile)
 
-	err := farsounds.SoundFileFromScript(inputJSONFile, outputSoundFile, 40.0)
+	err := farsounds.RenderScript(inputJSONFile, outputSoundFile, 40.0)
 	if err != nil {
 		fmt.Printf("err %v\n", err)
 	}

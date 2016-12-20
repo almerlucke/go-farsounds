@@ -1,6 +1,9 @@
 package farsounds
 
-import "container/list"
+import (
+	"container/list"
+	"errors"
+)
 
 // Buffer is a alias for a float64 slice
 type Buffer []float64
@@ -75,6 +78,9 @@ type Module interface {
 
 	// Message for this module
 	Message(message Message)
+
+	// Render to file
+	Render(filePath string, numSeconds float64) error
 }
 
 // BaseModule is the base module that implements all module interface methods
@@ -318,3 +324,56 @@ func (baseModule *BaseModule) SendMessage(address *Address, message Message) {}
 
 // Message STUB
 func (baseModule *BaseModule) Message(message Message) {}
+
+// Render module output to sound file
+func (baseModule *BaseModule) Render(filePath string, numSeconds float64) error {
+	self := baseModule.Parent
+	outlets := self.GetOutlets()
+	sr := self.GetSampleRate()
+	buflen := self.GetBufferLength()
+	numChannels := int32(len(outlets))
+
+	// Sanity check on numChannels
+	if numChannels < 1 || numChannels > 2 {
+		return errors.New("Module must have one or two outputs")
+	}
+
+	// Open sound writer
+	writer, err := OpenSoundWriter(filePath, numChannels, int32(sr), true)
+	if err != nil {
+		return err
+	}
+
+	// Always clean up writer
+	defer writer.Close()
+
+	// Prepare DSP loop
+	timestamp := int64(0)
+	numCycles := int64(((numSeconds * sr) / float64(buflen)) + 0.5)
+	sampleBuffer := make([]float64, numChannels*buflen)
+
+	// Generate samples for N cycles
+	for i := int64(0); i < numCycles; i++ {
+		self.PrepareDSP()
+		self.RequestDSP(timestamp)
+
+		// Interleave channels
+		for j := int32(0); j < buflen; j++ {
+			for c := int32(0); c < numChannels; c++ {
+				sampleBuffer[j*numChannels+c] = outlets[c].Buffer[j]
+			}
+		}
+
+		// Write samples
+		err = writer.WriteSamples(sampleBuffer)
+		if err != nil {
+			return err
+		}
+
+		// Increase timestamp
+		timestamp += int64(buflen)
+	}
+
+	// No errors
+	return nil
+}
