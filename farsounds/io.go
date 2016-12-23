@@ -167,8 +167,17 @@ func (w *SoundWriter) normalizeAndExport() error {
 
 // SoundFileBuffer contains sound file deinterleaved samples
 type SoundFileBuffer struct {
-	channels   [][]float64
-	sampleRate float64
+	// Deinterleaved channels
+	Channels [][]float64
+
+	// Sample rate
+	SampleRate float64
+
+	// Number of frames
+	NumFrames int64
+
+	// Duration in seconds
+	Duration float64
 }
 
 // NewSoundFileBuffer load sound file from disk deinterleaved
@@ -216,8 +225,10 @@ func NewSoundFileBuffer(filePath string) (*SoundFileBuffer, error) {
 	}
 
 	buffer := SoundFileBuffer{}
-	buffer.channels = channels
-	buffer.sampleRate = float64(info.Samplerate)
+	buffer.Duration = float64(info.Frames) / float64(info.Samplerate)
+	buffer.NumFrames = info.Frames
+	buffer.Channels = channels
+	buffer.SampleRate = float64(info.Samplerate)
 
 	return &buffer, nil
 }

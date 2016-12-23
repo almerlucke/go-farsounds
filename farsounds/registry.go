@@ -14,16 +14,18 @@ type PolyVoiceFactoryEntry struct {
 }
 
 type registry struct {
-	moduleFactories map[string]ModuleFactory
-	waveTables      map[string]WaveTable
-	voiceFactories  map[string]*PolyVoiceFactoryEntry
+	moduleFactories  map[string]ModuleFactory
+	waveTables       map[string]WaveTable
+	voiceFactories   map[string]*PolyVoiceFactoryEntry
+	soundFileBuffers map[string]*SoundFileBuffer
 }
 
 // Registry for modules and wave tables
 var Registry = &registry{
-	moduleFactories: make(map[string]ModuleFactory),
-	waveTables:      make(map[string]WaveTable),
-	voiceFactories:  make(map[string]*PolyVoiceFactoryEntry),
+	moduleFactories:  make(map[string]ModuleFactory),
+	waveTables:       make(map[string]WaveTable),
+	voiceFactories:   make(map[string]*PolyVoiceFactoryEntry),
+	soundFileBuffers: make(map[string]*SoundFileBuffer),
 }
 
 /*
@@ -84,4 +86,18 @@ func (registry *registry) GetWaveTable(waveTableName string) (WaveTable, error) 
 	}
 
 	return nil, fmt.Errorf("Unknown wavetable %s", waveTableName)
+}
+
+/*
+	Sound file buffers cache
+*/
+
+// RegisterSoundFileBuffer register sound file buffer
+func (registry *registry) RegisterSoundFileBuffer(bufferName string, buffer *SoundFileBuffer) {
+	registry.soundFileBuffers[bufferName] = buffer
+}
+
+// GetSoundFileBuffer get sound file buffer
+func (registry *registry) GetSoundFileBuffer(bufferName string) *SoundFileBuffer {
+	return registry.soundFileBuffers[bufferName]
 }

@@ -1,0 +1,31 @@
+{
+    "sampleRate": 44100.0,
+    "bufferLength": 512,
+    "patch": {
+        "numInlets": 0,
+        "numOutlets": 2,
+        "modules": {
+            "player": {
+                "type": "player",
+                "settings": {
+                    "file": "../../exampleSounds/drumGroove2.wav",
+                    "speed": 0.8,
+                    "repeat": true,
+                    "start": 0.5,
+                    "end": 1.5
+                }
+            }
+        },
+        "connections": [{
+            "from": "player",
+            "outlet": 0,
+            "to": "__outlet1",
+            "inlet": 0
+        }, {
+            "from": "player",
+            "outlet": 1,
+            "to": "__outlet2",
+            "inlet": 0
+        }]
+    }
+}
