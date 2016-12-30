@@ -189,7 +189,7 @@ func (generator *TestGenerator) GenerateTick(timestamp int64) bool {
 }
 
 func (generator *TestGenerator) GenerateDuration(timestamp int64) float64 {
-	return (rand.Float64()*1250.0 + 5.0) / 1000.0
+	return (rand.Float64()*250.0 + 5.0) / 1000.0
 }
 
 func (generator *TestGenerator) GenerateParameters(timestamp int64) interface{} {

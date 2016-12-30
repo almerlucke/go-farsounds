@@ -45,7 +45,7 @@ type InletModule struct {
 	*BaseModule
 
 	// Ptr to patch module inlet
-	inlet *Inlet
+	Inlet *Inlet
 }
 
 // OutletModule is used to copy samples from inside outlet to outside outlet
@@ -54,7 +54,7 @@ type OutletModule struct {
 	*BaseModule
 
 	// Ptr to patch module outlet
-	outlet *Outlet
+	Outlet *Outlet
 }
 
 // NewInletModule creates a new patch inlet module
@@ -62,7 +62,7 @@ func NewInletModule(inlet *Inlet, buflen int32, sr float64) *InletModule {
 	inletModule := new(InletModule)
 	inletModule.BaseModule = NewBaseModule(0, 1, buflen, sr)
 	inletModule.Parent = inletModule
-	inletModule.inlet = inlet
+	inletModule.Inlet = inlet
 	return inletModule
 }
 
@@ -70,7 +70,7 @@ func NewInletModule(inlet *Inlet, buflen int32, sr float64) *InletModule {
 func (module *InletModule) DSP(timestamp int64) {
 	outBuffer := module.Outlets[0].Buffer
 	// Copy patch inlet buffer to outlet buffer
-	for i, v := range module.inlet.Buffer {
+	for i, v := range module.Inlet.Buffer {
 		outBuffer[i] = v
 	}
 }
@@ -80,13 +80,13 @@ func NewOutletModule(outlet *Outlet, buflen int32, sr float64) *OutletModule {
 	outletModule := new(OutletModule)
 	outletModule.BaseModule = NewBaseModule(1, 0, buflen, sr)
 	outletModule.Parent = outletModule
-	outletModule.outlet = outlet
+	outletModule.Outlet = outlet
 	return outletModule
 }
 
 // DSP processor for patch outlet, copy module inlet samples to patch outlet
 func (module *OutletModule) DSP(timestamp int64) {
-	outBuffer := module.outlet.Buffer
+	outBuffer := module.Outlet.Buffer
 	// Copy inlet buffer to patch outlet buffer
 	for i, v := range module.Inlets[0].Buffer {
 		outBuffer[i] = v
@@ -142,7 +142,7 @@ func NewPatch(numInlets int, numOutlets int, buflen int32, sr float64) *Patch {
 		// Inlet modules are identified by __inlet + number
 		inletModule.SetIdentifier(fmt.Sprintf("__inlet%d", i+1))
 		patch.InletModules[i] = inletModule
-		patch.Modules.PushBack(inletModule)
+		patch.AddModule(inletModule)
 	}
 
 	// Create outlet modules
@@ -152,7 +152,7 @@ func NewPatch(numInlets int, numOutlets int, buflen int32, sr float64) *Patch {
 		// Outlet modules are identified by __outlet + number
 		outletModule.SetIdentifier(fmt.Sprintf("__outlet%d", i+1))
 		patch.OutletModules[i] = outletModule
-		patch.Modules.PushBack(outletModule)
+		patch.AddModule(outletModule)
 	}
 
 	return patch
@@ -221,7 +221,7 @@ func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error
 		modules[moduleIdentifier] = module
 
 		// Add module to patch
-		patch.Modules.PushBack(module)
+		patch.AddModule(module)
 	}
 
 	// Create connections
@@ -324,4 +324,9 @@ func (patch *Patch) SendMessage(address *Address, message Message) {
 			}
 		}
 	}
+}
+
+// AddModule convenience function
+func (patch *Patch) AddModule(module Module) {
+	patch.Modules.PushBack(module)
 }

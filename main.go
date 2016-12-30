@@ -8,7 +8,6 @@ import (
 	"github.com/gordonklaus/portaudio"
 
 	"github.com/almerlucke/go-farsounds/farsounds/components"
-	"github.com/almerlucke/go-farsounds/farsounds/components/granulator"
 )
 
 func setup() {
@@ -36,19 +35,21 @@ func main() {
 	//
 	// fmt.Printf("Soundfile rendered in %f sec\n\n", time.Now().Sub(startTime).Seconds())
 
-	testGenerator := &granulator.TestGenerator{}
-	gr := granulator.NewGranulator(testGenerator, testGenerator, testGenerator, testGenerator)
-	grModule := granulator.NewGranulatorModule(gr, 512, 44100.0)
+	// testGenerator := &granulator.TestGenerator{}
+	// gr := granulator.NewGranulator(testGenerator, testGenerator, testGenerator, testGenerator)
+	// grModule := granulator.NewGranulatorModule(gr, 512, 44100.0)
 	freeverb := components.NewFreeVerbModule(512, 44100.0)
-	patch := farsounds.NewPatch(0, 2, 512, 44100.0)
-	patch.Modules.PushBack(grModule)
-	patch.Modules.PushBack(freeverb)
-	grModule.Connect(0, freeverb, 0)
+	patch := farsounds.NewPatch(2, 2, 512, 44100.0)
+	patch.AddModule(freeverb)
+	// patch.AddModule(grModule)
+	patch.InletModules[0].Connect(0, freeverb, 0)
+	patch.InletModules[1].Connect(0, freeverb, 1)
+	// grModule.Connect(0, freeverb, 0)
 	freeverb.Connect(0, patch.OutletModules[0], 0)
 	freeverb.Connect(1, patch.OutletModules[1], 0)
 	// farsounds.SoundFileFromPatch(patch, "/Users/almerlucke/Desktop/grains", 20.0)
 
-	stream, err := farsounds.NewModuleStream(patch)
+	stream, err := farsounds.NewPatchStream(patch)
 	if err != nil {
 		return
 	}
