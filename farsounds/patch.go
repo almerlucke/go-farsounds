@@ -260,6 +260,15 @@ func PatchFactory(settings interface{}, buflen int32, sr float64) (Module, error
 	return patch, nil
 }
 
+/*
+	Patch methods
+*/
+
+// AddModule convenience function
+func (patch *Patch) AddModule(module Module) {
+	patch.Modules.PushBack(module)
+}
+
 // DSP processor for patch, perform DSP on internal modules
 func (patch *Patch) DSP(timestamp int64) {
 	// Process all score players first
@@ -324,9 +333,4 @@ func (patch *Patch) SendMessage(address *Address, message Message) {
 			}
 		}
 	}
-}
-
-// AddModule convenience function
-func (patch *Patch) AddModule(module Module) {
-	patch.Modules.PushBack(module)
 }
